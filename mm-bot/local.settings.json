@@ -1,0 +1,18 @@
+{
+  "ConnectionStrings": {
+    "SqlConnectionString": "Server = localhost; DataBase = mmTransaction; Integrated Security = false; User Id = postgres; password = 4241; Port=5432;",
+    "CryptoApiUrl": "http://134.209.216.186:1831/api/crypto/"
+  },
+  "Settings": {
+    "HotWallet": "public_key, private_key",
+    "ColdWallet": [ "public_key, private_key", "" ],
+    "ColdStorageBaseVolumeUSDC": 0.0,
+    "ColdStorageBaseVolumeSOL": 0.0,
+    "MainExchangeToken": "Token_Address",
+    "DailyTradingVolumeUSDC": 1.0,
+    "PercentageOfRandomTransactionsForAddToken": 0.05,
+    "MinimumDelayInSecondsForOneTransactionPerWallet": 180,
+    "AutomaticGenerationOfWallets": true,
+    "ColdWalletsCount": 10
+  }
+}
