@@ -8,6 +8,6 @@ namespace mm_bot.Services.Interfaces
 {
     public interface ICommandService
     {
-        public Task ProcessCommand(string command);
+        public Task<CancellationTokenSource> ProcessCommandAsync(string command, CancellationTokenSource cancellationTokenSourceTransactions);
     }
 }

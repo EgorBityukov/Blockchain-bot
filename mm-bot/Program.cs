@@ -39,9 +39,11 @@ IHost host = Host.CreateDefaultBuilder(args)
         services.AddTransient<IWalletRepository, WalletRepository>();
         services.AddTransient<IWalletService, WalletService>();
         services.AddTransient<ICryptoService, CryptoService>();
+        services.AddTransient<ICleanUpService, CleanUpService>();
         services.AddTransient<ITransactionService, TransactionService>();
 
         services.Configure<ConfigSettings>(config.GetSection("Settings"));
+
         services.AddTransient<ConfigSettings>(_ => _.GetRequiredService<IOptions<ConfigSettings>>().Value);
     })
     .Build();

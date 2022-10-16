@@ -10,25 +10,26 @@ namespace mm_bot
         private readonly IWalletService _walletService;
         private readonly IOptions<ConfigSettings> _options;
         private readonly ICommandService  _commandService;
+        private readonly ITransactionService _transactionService;
 
-        private WalletModel HotWallet;
-        private List<WalletModel> ColdWallets;
+        CancellationTokenSource cancellationTokenSourceTransactions = new CancellationTokenSource();
 
         public Worker(ILogger<Worker> logger, 
             IWalletService walletService,
             IOptions<ConfigSettings> options,
-            ICommandService commandService)
+            ICommandService commandService,
+            ITransactionService transactionService)
         {
             _logger = logger;
             _walletService = walletService;
             _options = options;
             _commandService = commandService;
+            _transactionService = transactionService;
         }
 
         public override async Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Start");
-            await base.StartAsync(cancellationToken);
             _logger.LogInformation("Generation wallets {genWallets}", _options.Value.AutomaticGenerationOfWallets);
 
             //Generate wallets
@@ -46,14 +47,14 @@ namespace mm_bot
 
             await _walletService.AddHotWalletFromConfigAsync(_options.Value.HotWallet);
 
-            _ = Task.Run(() => ListenForInput(cancellationToken));
+            _ = Task.Run(() => ListenForInput(cancellationTokenSourceTransactions));
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                
+                await _transactionService.StartTransationsAsync(cancellationTokenSourceTransactions.Token);
 
                 _logger.LogInformation("Worker in time {time}", DateTime.Now);
                 await Task.Delay(3000, stoppingToken);
@@ -66,7 +67,7 @@ namespace mm_bot
             await Task.CompletedTask;
         }
 
-        void ListenForInput(CancellationToken cancellationToken)
+        private async Task ListenForInput(CancellationTokenSource cancellationTokenSourceTransactions)
         {
             while (true)
             {
@@ -74,7 +75,8 @@ namespace mm_bot
                 if (!String.IsNullOrWhiteSpace(userInput))
                 {
                     _logger.LogInformation($"Executing user command {userInput}...");
-                    _commandService.ProcessCommand(userInput);
+                    var result = await _commandService.ProcessCommandAsync(userInput, cancellationTokenSourceTransactions);
+                    cancellationTokenSourceTransactions = result;
                 }    
             }
         }

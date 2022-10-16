@@ -9,5 +9,16 @@ namespace mm_bot.Services
 {
     public class CleanUpService : ICleanUpService
     {
+        private readonly IWalletService _walletService;
+
+        public CleanUpService(IWalletService walletService)
+        {
+            _walletService = walletService;
+        }
+
+        public async Task<bool> StartCleanUpAsync()
+        {
+            return true;
+        }
     }
 }

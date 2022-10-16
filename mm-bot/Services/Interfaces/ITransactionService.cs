@@ -8,5 +8,6 @@ namespace mm_bot.Services.Interfaces
 {
     public interface ITransactionService
     {
+        public Task StartTransationsAsync(CancellationToken cancellationToken);
     }
 }

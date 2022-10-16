@@ -9,12 +9,24 @@ namespace mm_bot.Services
 {
     public class CommandService : ICommandService
     {
-        public async Task ProcessCommand(string command)
+        private readonly ICleanUpService _cleanUpService;
+
+        public CommandService(ICleanUpService cleanUpService)
+        {
+            _cleanUpService = cleanUpService;
+        }
+
+        public async Task<CancellationTokenSource> ProcessCommandAsync(string command, CancellationTokenSource cancellationTokenSourceTransactions)
         {
             if (command.Equals("-cleanup"))
             {
-
+                cancellationTokenSourceTransactions.Cancel();
+                var result = await _cleanUpService.StartCleanUpAsync();
+                cancellationTokenSourceTransactions = new CancellationTokenSource();
+                return cancellationTokenSourceTransactions;
             }
+
+            return null;
         }
     }
 }

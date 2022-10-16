@@ -24,13 +24,23 @@ namespace mm_bot.Services
             _options = options;
         }
 
-        public async Task StartTransations(CancellationToken cancellationToken)
+        public async Task StartTransationsAsync(CancellationToken cancellationToken)
         {
             //ThreadPool.QueueUserWorkItem(async () =>{);
 
             while (!cancellationToken.IsCancellationRequested)
             {
 
+            }
+        }
+
+        public async Task MonitoringSolBalanceAsync(CancellationTokenSource cancellationTokenSourceTransactions)
+        {
+            bool hotWalletBalanceEnough = true;
+
+            if (hotWalletBalanceEnough)
+            {
+                cancellationTokenSourceTransactions.Cancel();
             }
         }
     }
