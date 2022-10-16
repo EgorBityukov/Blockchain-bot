@@ -10,6 +10,6 @@ namespace mm_bot.Services.Interfaces
     public interface ICryptoService
     {
         public Task<JObject> CreateWalletAsync();
-        public Task<JObject> GetInfoAboutWallet(string privateKey);
+        public Task<JObject> GetInfoAboutWalletAsync(string privateKey);
     }
 }

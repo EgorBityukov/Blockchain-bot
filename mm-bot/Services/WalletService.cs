@@ -26,7 +26,7 @@ namespace mm_bot.Services
             _mapper = mapper;
         }
 
-        public async Task<List<WalletModel>> GenerateWallets(int countWallets)
+        public async Task<List<WalletModel>> GenerateWalletsAsync(int countWallets)
         {
             List<WalletModel> wallets = new List<WalletModel>();
 
@@ -40,11 +40,13 @@ namespace mm_bot.Services
                     PrivateKey = newWalletJson.Value<string>("private_key")
                 };
 
-                var walletInfoJson = await _cryptoService.GetInfoAboutWallet(wallet.PrivateKey);
-                wallet.Lamports = walletInfoJson.Value<double>("lamports");
-                wallet.SOL = walletInfoJson.Value<double>("sol");
-                wallet.ApproximateMintPrice = walletInfoJson.Value<double>("approximate_mint_price");
-                wallet.Tokens = walletInfoJson.Value<double>("tokens");
+                var walletInfo = await GetInfoAboutWalletAsync(wallet.PrivateKey);
+                wallet.PublicKey = walletInfo.PublicKey;
+                wallet.Lamports = walletInfo.Lamports;
+                wallet.SOL = walletInfo.SOL;
+                wallet.ApproximateMintPrice = walletInfo.ApproximateMintPrice;
+                wallet.Tokens = walletInfo.Tokens;
+                wallet.HotWallet = false;
 
                 wallets.Add(wallet);
             }
@@ -52,6 +54,83 @@ namespace mm_bot.Services
             await _walletRepository.AddWalletListAsync(_mapper.Map<List<Wallet>>(wallets));
 
             return wallets;
+        }
+
+        public async Task DeleteAllWalletsAsync()
+        {
+            await _walletRepository.DeleteAllWalletsAsync();
+        }
+
+        public async Task<List<WalletModel>> GetWalletsAsync()
+        {
+            return _mapper.Map<List<WalletModel>>(await _walletRepository.GetWalletsAsync());
+        }
+
+        public async Task AddColdWalletsFromConfigAsync(List<MainWalletInfo> mainWalletInfos)
+        {
+            List<WalletModel> wallets = new List<WalletModel>();
+
+            foreach (var mainWalletInfo in mainWalletInfos)
+            {
+                if (await _walletRepository.CheckWalletNotExistAsync(mainWalletInfo.PrivateKey))
+                {
+                    WalletModel wallet = new WalletModel
+                    {
+                        PrivateKey = mainWalletInfo.PrivateKey
+                    };
+
+                    var walletInfo = await GetInfoAboutWalletAsync(wallet.PrivateKey);
+                    wallet.PublicKey = walletInfo.PublicKey;
+                    wallet.Lamports = walletInfo.Lamports;
+                    wallet.SOL = walletInfo.SOL;
+                    wallet.ApproximateMintPrice = walletInfo.ApproximateMintPrice;
+                    wallet.Tokens = walletInfo.Tokens;
+                    wallet.HotWallet = false;
+
+                    wallets.Add(wallet);
+                }
+            }
+
+            if(wallets.Count > 0)
+            {
+                await _walletRepository.AddWalletListAsync(_mapper.Map<List<Wallet>>(wallets));
+            } 
+        }
+
+        public async Task<WalletModel> GetInfoAboutWalletAsync(string privateKey)
+        {
+            WalletModel walletInfo = new WalletModel();
+
+            var walletInfoJson = await _cryptoService.GetInfoAboutWalletAsync(privateKey);
+
+            walletInfo.Lamports = walletInfoJson.Value<double>("lamports");
+            walletInfo.SOL = walletInfoJson.Value<double>("sol");
+            walletInfo.ApproximateMintPrice = walletInfoJson.Value<double>("approximate_mint_price");
+            walletInfo.Tokens = walletInfoJson.Value<double>("tokens");
+            walletInfo.PublicKey = walletInfoJson.Value<string>("public_key");
+
+            return walletInfo;
+        }
+
+        public async Task AddHotWalletFromConfigAsync(MainWalletInfo mainWalletInfo)
+        {
+            if (await _walletRepository.CheckWalletNotExistAsync(mainWalletInfo.PrivateKey))
+            {
+                WalletModel hotWallet = new WalletModel
+                {
+                    PrivateKey = mainWalletInfo.PrivateKey
+                };
+
+                var walletInfo = await GetInfoAboutWalletAsync(hotWallet.PrivateKey);
+                hotWallet.PublicKey = walletInfo.PublicKey;
+                hotWallet.Lamports = walletInfo.Lamports;
+                hotWallet.SOL = walletInfo.SOL;
+                hotWallet.ApproximateMintPrice = walletInfo.ApproximateMintPrice;
+                hotWallet.Tokens = walletInfo.Tokens;
+                hotWallet.HotWallet = true;
+
+                await _walletRepository.AddWalletAsync(_mapper.Map<Wallet>(hotWallet));
+            }
         }
     }
 }

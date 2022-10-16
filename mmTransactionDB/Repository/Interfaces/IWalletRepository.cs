@@ -11,5 +11,8 @@ namespace mmTransactionDB.Repository.Interfaces
     {
         public Task AddWalletAsync(Wallet walletModel);
         public Task AddWalletListAsync(List<Wallet> wallets);
+        public Task DeleteAllWalletsAsync();
+        public Task<List<Wallet>> GetWalletsAsync();
+        public Task<bool> CheckWalletNotExistAsync(string privateKey);
     }
 }

@@ -4,15 +4,33 @@
     "CryptoApiUrl": "http://134.209.216.186:1831/api/crypto/"
   },
   "Settings": {
-    "HotWallet": "public_key, private_key",
-    "ColdWallet": [ "public_key, private_key", "" ],
+    "HotWallet": {
+      "MainWalletInfo": {
+        "PublicKey": "5Bma4BvxiqmW5szfKmGb8H3rrGTdu659ZKtZbs4PMD3j",
+        "PrivateKey": "z/QoSzx0Ifz5rvFuwLN4r9wkfnEfn28FzMUq/pCCVCfrwgHzzCJfkbgK0iAtXCqhmgy0h5hxbhfetXT26g1pmcK1y6yDSfqqy5D2EjKBWc5h1v8FiiI/K9plZxM4GAXom4WzRbVmIQ=="
+      }
+    },
+    "ColdWallet": [
+      {
+        "MainWalletInfo": {
+          "PublicKey": "AFs8VxTyjgudKXN2LPPK27L6SQTVzwByRDoEyLm6k5wM",
+          "PrivateKey": "0D2qWgnnqL9OhekmgTANJ1pbFHwiYn/QC+rbQsz7hxtLgrRb11cGYzyjoMI23N9GieKWNILXhuBYQCelgL24ebqcmofn1xBJTpRKm9O0CiZ+xOLcD7lR6sl7kJfXduFYol9NvqebrA=="
+        }
+      },
+      {
+        "MainWalletInfo": {
+          "PublicKey": "HFukhgfUF4nWXGipH8kaiKAstWfMgVELnkXQuxFjVTZ1",
+          "PrivateKey": "XRi/MvWCtQkB6iH7+odzT0ZiQma4iE/33BIVQFub8vZ18HrxIaWrPECWYDQ+yC5+3ZDp47p8hw1vRhVbb/q1V3fkJlmy108I2plB3qbl2g7TfIlWFEQmWV3DGlN7nLdqqiDbYSLY9Q=="
+        }
+      }
+    ],
     "ColdStorageBaseVolumeUSDC": 0.0,
     "ColdStorageBaseVolumeSOL": 0.0,
     "MainExchangeToken": "Token_Address",
     "DailyTradingVolumeUSDC": 1.0,
     "PercentageOfRandomTransactionsForAddToken": 0.05,
     "MinimumDelayInSecondsForOneTransactionPerWallet": 180,
-    "AutomaticGenerationOfWallets": true,
+    "AutomaticGenerationOfWallets": false,
     "ColdWalletsCount": 10
   }
 }

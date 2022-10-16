@@ -15,5 +15,12 @@ namespace mmTransactionDB.DataAccess
         public mmTransactionDBContext(DbContextOptions<mmTransactionDBContext> options) : base(options)
         {
         }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Wallet>()
+                .HasIndex(w => new { w.PrivateKey, w.PublicKey })
+                .IsUnique(true);
+        }
     }
 }

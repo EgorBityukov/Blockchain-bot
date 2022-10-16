@@ -32,7 +32,7 @@ namespace mm_bot.Services
             }
         }
 
-        public async Task<JObject> GetInfoAboutWallet(string privateKey)
+        public async Task<JObject> GetInfoAboutWalletAsync(string privateKey)
         {
             _httpClient.DefaultRequestHeaders.Add("x-auth-token", privateKey);
             HttpResponseMessage response = (await _httpClient.GetAsync("wallets")).EnsureSuccessStatusCode();

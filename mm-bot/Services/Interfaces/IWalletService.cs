@@ -9,6 +9,10 @@ namespace mm_bot.Services.Interfaces
 {
     public interface IWalletService
     {
-        public Task<List<WalletModel>> GenerateWallets(int CountWallets);
+        public Task<List<WalletModel>> GenerateWalletsAsync(int CountWallets);
+        public Task DeleteAllWalletsAsync();
+        public Task<List<WalletModel>> GetWalletsAsync();
+        public Task AddColdWalletsFromConfigAsync(List<MainWalletInfo> mainWalletInfos);
+        public Task AddHotWalletFromConfigAsync(MainWalletInfo mainWalletInfo);
     }
 }

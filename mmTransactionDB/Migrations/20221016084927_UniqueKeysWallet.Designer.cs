@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using mmTransactionDB.DataAccess;
@@ -11,9 +12,10 @@ using mmTransactionDB.DataAccess;
 namespace mmTransactionDB.Migrations
 {
     [DbContext(typeof(mmTransactionDBContext))]
-    partial class mmTransactionDBContextModelSnapshot : ModelSnapshot
+    [Migration("20221016084927_UniqueKeysWallet")]
+    partial class UniqueKeysWallet
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -66,9 +68,6 @@ namespace mmTransactionDB.Migrations
                     b.Property<double>("ApproximateMintPrice")
                         .HasColumnType("double precision");
 
-                    b.Property<bool>("HotWallet")
-                        .HasColumnType("boolean");
-
                     b.Property<double>("Lamports")
                         .HasColumnType("double precision");
 
@@ -79,9 +78,6 @@ namespace mmTransactionDB.Migrations
                         .HasColumnType("text");
 
                     b.Property<double>("SOL")
-                        .HasColumnType("double precision");
-
-                    b.Property<double>("Tokens")
                         .HasColumnType("double precision");
 
                     b.HasKey("Id");

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using mmTransactionDB.DataAccess;
@@ -11,9 +12,10 @@ using mmTransactionDB.DataAccess;
 namespace mmTransactionDB.Migrations
 {
     [DbContext(typeof(mmTransactionDBContext))]
-    partial class mmTransactionDBContextModelSnapshot : ModelSnapshot
+    [Migration("20221016094743_HotWalletModel")]
+    partial class HotWalletModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
