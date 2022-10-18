@@ -1,6 +1,7 @@
 ﻿using mm_bot.Models.ResponseModel;
 using mm_bot.Services.Interfaces;
 using Newtonsoft.Json.Linq;
+using System.Net.Http.Headers;
 
 namespace mm_bot.Services
 {
@@ -39,8 +40,11 @@ namespace mm_bot.Services
         public async Task<JObject> GetInfoAboutWalletAsync(string privateKey)
         {
             _httpClient.DefaultRequestHeaders.Add("x-auth-token", privateKey);
-            HttpResponseMessage response = (await _httpClient.GetAsync("wallets")).EnsureSuccessStatusCode();
+            
+            HttpResponseMessage response = (await _httpClient.GetAsync("wallets")).EnsureSuccessStatusCode(); 
             string responseBody = await response.Content.ReadAsStringAsync();
+
+            _httpClient.DefaultRequestHeaders.Remove("x-auth-token");
 
             JObject walletInfoResponce = JObject.Parse(responseBody);
 
