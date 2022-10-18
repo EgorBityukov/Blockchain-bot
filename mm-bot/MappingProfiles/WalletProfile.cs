@@ -15,6 +15,9 @@ namespace mm_bot.Mapper
         {
             CreateMap<Wallet, WalletModel>()
                 .ReverseMap();
+
+            CreateMap<Token, TokenModel>()
+                .ReverseMap();
         }
     }
 }

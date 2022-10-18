@@ -12,8 +12,8 @@ using mmTransactionDB.DataAccess;
 namespace mmTransactionDB.Migrations
 {
     [DbContext(typeof(mmTransactionDBContext))]
-    [Migration("20221016084927_UniqueKeysWallet")]
-    partial class UniqueKeysWallet
+    [Migration("20221018140519_start")]
+    partial class start
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -59,14 +59,39 @@ namespace mmTransactionDB.Migrations
                     b.ToTable("mmTransactions");
                 });
 
+            modelBuilder.Entity("mmTransactionDB.Models.Token", b =>
+                {
+                    b.Property<Guid>("IdToken")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Amount")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Mint")
+                        .HasColumnType("text");
+
+                    b.Property<string>("OwnerId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("PublicKey")
+                        .HasColumnType("text");
+
+                    b.HasKey("IdToken");
+
+                    b.ToTable("Tokens");
+                });
+
             modelBuilder.Entity("mmTransactionDB.Models.Wallet", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<Guid>("IdWallet")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
                     b.Property<double>("ApproximateMintPrice")
                         .HasColumnType("double precision");
+
+                    b.Property<bool>("HotWallet")
+                        .HasColumnType("boolean");
 
                     b.Property<double>("Lamports")
                         .HasColumnType("double precision");
@@ -80,12 +105,28 @@ namespace mmTransactionDB.Migrations
                     b.Property<double>("SOL")
                         .HasColumnType("double precision");
 
-                    b.HasKey("Id");
+                    b.HasKey("IdWallet");
 
                     b.HasIndex("PrivateKey", "PublicKey")
                         .IsUnique();
 
                     b.ToTable("Wallets");
+                });
+
+            modelBuilder.Entity("mmTransactionDB.Models.Token", b =>
+                {
+                    b.HasOne("mmTransactionDB.Models.Wallet", "Owner")
+                        .WithMany("Tokens")
+                        .HasForeignKey("IdToken")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("mmTransactionDB.Models.Wallet", b =>
+                {
+                    b.Navigation("Tokens");
                 });
 #pragma warning restore 612, 618
         }
