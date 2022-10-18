@@ -45,7 +45,6 @@ namespace mm_bot.Services
                 wallet.Lamports = walletInfo.Lamports;
                 wallet.SOL = walletInfo.SOL;
                 wallet.ApproximateMintPrice = walletInfo.ApproximateMintPrice;
-                wallet.Tokens = walletInfo.Tokens;
                 wallet.HotWallet = false;
 
                 wallets.Add(wallet);
@@ -66,6 +65,17 @@ namespace mm_bot.Services
             return _mapper.Map<List<WalletModel>>(await _walletRepository.GetWalletsAsync());
         }
 
+        public async Task<WalletModel> GetHotWalletAsync()
+        {
+            //var hotWallet = wallets.Where(w => w.HotWallet == true).First();
+            return _mapper.Map<WalletModel>(await _walletRepository.GetHotWalletAsync());
+        }
+
+        public async Task<List<WalletModel>> GetColdWalletsAsync()
+        {
+            return _mapper.Map<List<WalletModel>>(await _walletRepository.GetColdWalletsAsync());
+        }
+
         public async Task AddColdWalletsFromConfigAsync(List<MainWalletInfo> mainWalletInfos)
         {
             List<WalletModel> wallets = new List<WalletModel>();
@@ -84,7 +94,6 @@ namespace mm_bot.Services
                     wallet.Lamports = walletInfo.Lamports;
                     wallet.SOL = walletInfo.SOL;
                     wallet.ApproximateMintPrice = walletInfo.ApproximateMintPrice;
-                    wallet.Tokens = walletInfo.Tokens;
                     wallet.HotWallet = false;
 
                     wallets.Add(wallet);
@@ -106,7 +115,6 @@ namespace mm_bot.Services
             walletInfo.Lamports = walletInfoJson.Value<double>("lamports");
             walletInfo.SOL = walletInfoJson.Value<double>("sol");
             walletInfo.ApproximateMintPrice = walletInfoJson.Value<double>("approximate_mint_price");
-            walletInfo.Tokens = walletInfoJson.Value<double>("tokens");
             walletInfo.PublicKey = walletInfoJson.Value<string>("public_key");
 
             return walletInfo;
@@ -126,7 +134,6 @@ namespace mm_bot.Services
                 hotWallet.Lamports = walletInfo.Lamports;
                 hotWallet.SOL = walletInfo.SOL;
                 hotWallet.ApproximateMintPrice = walletInfo.ApproximateMintPrice;
-                hotWallet.Tokens = walletInfo.Tokens;
                 hotWallet.HotWallet = true;
 
                 await _walletRepository.AddWalletAsync(_mapper.Map<Wallet>(hotWallet));

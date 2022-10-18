@@ -24,6 +24,22 @@ namespace mm_bot.Services
             _options = options;
         }
 
+        public async Task ExchangeAllTokensToHotWalletAsync()
+        {
+            var hotWallet = await _walletService.GetHotWalletAsync();
+            var coldWallets = await _walletService.GetColdWalletsAsync();
+        }
+
+        public async Task TransferUSDCToHotWalletAsync()
+        {
+
+        }
+
+        public async Task TransferSOLToHotWalletAsync()
+        {
+
+        }
+
         public async Task StartTransationsAsync(CancellationToken cancellationToken)
         {
             //ThreadPool.QueueUserWorkItem(async () =>{);
@@ -38,7 +54,7 @@ namespace mm_bot.Services
         {
             bool hotWalletBalanceEnough = true;
 
-            if (hotWalletBalanceEnough)
+            if (!hotWalletBalanceEnough)
             {
                 cancellationTokenSourceTransactions.Cancel();
             }

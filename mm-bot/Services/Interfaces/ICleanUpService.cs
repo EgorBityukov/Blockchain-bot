@@ -8,6 +8,6 @@ namespace mm_bot.Services.Interfaces
 {
     public interface ICleanUpService
     {
-        public Task<bool> StartCleanUpAsync();
+        public Task<bool> CleanUpAsync();
     }
 }

@@ -15,10 +15,10 @@ namespace mm_bot
         CancellationTokenSource cancellationTokenSourceTransactions = new CancellationTokenSource();
 
         public Worker(ILogger<Worker> logger, 
-            IWalletService walletService,
-            IOptions<ConfigSettings> options,
-            ICommandService commandService,
-            ITransactionService transactionService)
+                      IWalletService walletService,
+                      IOptions<ConfigSettings> options,
+                      ICommandService commandService,
+                      ITransactionService transactionService)
         {
             _logger = logger;
             _walletService = walletService;
@@ -45,16 +45,32 @@ namespace mm_bot
                 await _walletService.AddColdWalletsFromConfigAsync(_options.Value.ColdWallet); 
             }
 
+            //Will not add hot wallet if already exsist
             await _walletService.AddHotWalletFromConfigAsync(_options.Value.HotWallet);
 
+            //Listen input commands
             _ = Task.Run(() => ListenForInput(cancellationTokenSourceTransactions));
+
+            //Start exchange transactions
+            _ = Task.Run(() => _transactionService.StartTransationsAsync(cancellationTokenSourceTransactions.Token));
+
+            await base.StartAsync(cancellationToken);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                await _transactionService.StartTransationsAsync(cancellationTokenSourceTransactions.Token);
+                //if (button.Content == "Start")
+                //{
+                //    button.Content = "Stop";
+                //    DoWork(cts.Token);
+                //}
+                //else
+                //{
+                //    button.Content = "Start";
+                //    cts.Cancel();
+                //}
 
                 _logger.LogInformation("Worker in time {time}", DateTime.Now);
                 await Task.Delay(3000, stoppingToken);

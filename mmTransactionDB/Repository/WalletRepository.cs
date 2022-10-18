@@ -43,9 +43,21 @@ namespace mmTransactionDB.Repository
             await _mmContext.SaveChangesAsync();
         }
 
+        public async Task<List<Wallet>> GetColdWalletsAsync()
+        {
+            return await _mmContext.Wallets.Where(w => w.HotWallet == false).ToListAsync();
+        }
+
+        public async Task<Wallet> GetHotWalletAsync()
+        {
+            return await _mmContext.Wallets.Where(w => w.HotWallet == true).FirstOrDefaultAsync();
+        }
+
         public async Task<List<Wallet>> GetWalletsAsync()
         {
             return await _mmContext.Wallets.ToListAsync();
         }
+
+
     }
 }

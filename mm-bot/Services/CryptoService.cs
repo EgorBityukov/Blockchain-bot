@@ -1,17 +1,21 @@
-﻿using mm_bot.Services.Interfaces;
+﻿using mm_bot.Models.ResponseModel;
+using mm_bot.Services.Interfaces;
 using Newtonsoft.Json.Linq;
 
 namespace mm_bot.Services
 {
     public class CryptoService : ICryptoService
     {
+        private readonly ILogger<Worker> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
-        private HttpClient _httpClient;
+        private readonly HttpClient _httpClient;
 
-        public CryptoService(IHttpClientFactory httpClientFactory)
+        public CryptoService(IHttpClientFactory httpClientFactory,
+                             ILogger<Worker> logger)
         {
             _httpClientFactory = httpClientFactory;
             _httpClient = _httpClientFactory.CreateClient("CryptoClient");
+            _logger = logger;
         }
 
         public async Task<JObject> CreateWalletAsync()
@@ -48,6 +52,46 @@ namespace mm_bot.Services
             else
             {
                 return (JObject)walletInfoResponce.GetValue("data");
+            }
+        }
+        //dodelat' ??????????????????????????????????????????????????
+        public async Task<string> TransferLamportsToAnotherWallet(string privateKey, string toPublicKey, double lamports, double sol)
+        {
+            _httpClient.DefaultRequestHeaders.Add("x-auth-token", privateKey);
+            HttpResponseMessage response = (await _httpClient.GetAsync("wallets/send")).EnsureSuccessStatusCode();
+            string responseBody = await response.Content.ReadAsStringAsync();
+
+            JObject walletInfoResponce = JObject.Parse(responseBody);
+
+            if (walletInfoResponce.Value<string>("status").Equals("error"))
+            {
+                _logger.LogError("CryptoService - Create Wallet Http Request Exception: {0} /n" +
+                    "Transaction Id: {1}", walletInfoResponce.GetValue("error"), walletInfoResponce.GetValue("txid"));
+                return walletInfoResponce.GetValue("txid").ToString();
+            }
+            else
+            {
+                return walletInfoResponce.GetValue("txid").ToString();
+            }
+        }
+
+        public async Task<List<WalletTokenResponseModel>> GetWalletTokensAsync(string publicKey)
+        {
+            HttpResponseMessage response = (await _httpClient.GetAsync($"wallets/{publicKey}/tokens")).EnsureSuccessStatusCode();
+            string responseBody = await response.Content.ReadAsStringAsync();
+
+            JObject tokenInfoResponce = JObject.Parse(responseBody);
+
+            if (tokenInfoResponce.Value<string>("status").Equals("error"))
+            {
+                _logger.LogError("CryptoService - Create Wallet Http Request Exception: {0} /n" +
+                    "Transaction Id: {1}", tokenInfoResponce.GetValue("error"), tokenInfoResponce.GetValue("txid"));
+                return null;
+            }
+            else
+            {
+                List<WalletTokenResponseModel> tokens = tokenInfoResponce.GetValue("data").ToObject<List<WalletTokenResponseModel>>();
+                return tokens;
             }
         }
     }

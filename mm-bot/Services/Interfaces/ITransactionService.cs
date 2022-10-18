@@ -9,5 +9,8 @@ namespace mm_bot.Services.Interfaces
     public interface ITransactionService
     {
         public Task StartTransationsAsync(CancellationToken cancellationToken);
+        public Task ExchangeAllTokensToHotWalletAsync();
+        public Task TransferUSDCToHotWalletAsync();
+        public Task TransferSOLToHotWalletAsync();
     }
 }

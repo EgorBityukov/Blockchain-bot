@@ -21,7 +21,7 @@ namespace mm_bot.Services
             if (command.Equals("-cleanup"))
             {
                 cancellationTokenSourceTransactions.Cancel();
-                var result = await _cleanUpService.StartCleanUpAsync();
+                var result = await _cleanUpService.CleanUpAsync();
                 cancellationTokenSourceTransactions = new CancellationTokenSource();
                 return cancellationTokenSourceTransactions;
             }

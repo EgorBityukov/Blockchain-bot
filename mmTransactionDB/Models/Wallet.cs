@@ -9,7 +9,7 @@ namespace mmTransactionDB.Models
         public double Lamports { get; set; }
         public double SOL { get; set; }
         public double ApproximateMintPrice { get; set; }
-        public double Tokens { get; set; }
+        public List<TokenAccount> Tokens { get; set; }
         public bool HotWallet { get; set; }
     }
 }
