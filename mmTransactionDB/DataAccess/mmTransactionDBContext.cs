@@ -9,9 +9,9 @@ namespace mmTransactionDB.DataAccess
         public DbSet<Wallet> Wallets { get; set; }
         public DbSet<Token> Tokens { get; set; }
 
-        public mmTransactionDBContext() : base()
-        {
-        }
+        //public mmTransactionDBContext() : base()
+        //{
+        //}
 
         public mmTransactionDBContext(DbContextOptions<mmTransactionDBContext> options) : base(options)
         {
@@ -21,17 +21,23 @@ namespace mmTransactionDB.DataAccess
         {
             modelBuilder.Entity<Wallet>()
                 .HasKey(w => w.IdWallet);
+
             modelBuilder.Entity<Wallet>()
                 .HasIndex(w => new { w.PrivateKey, w.PublicKey })
                 .IsUnique(true);
+
             modelBuilder.Entity<Token>()
                 .HasKey(t => t.IdToken);
+
             modelBuilder.Entity<Token>()
                 .HasOne(c => c.Owner)
                 .WithMany(u => u.Tokens)
                 .HasForeignKey(k => k.IdToken)
                 .OnDelete(DeleteBehavior.Cascade)
                 .IsRequired();
+
+            modelBuilder.Entity<mmTransaction>()
+                .HasKey(t => t.Id);
 
             base.OnModelCreating(modelBuilder);
         }

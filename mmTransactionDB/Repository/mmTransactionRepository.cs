@@ -1,13 +1,14 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using mmTransactionDB.DataAccess;
 using mmTransactionDB.Models;
-using mmTransactionDB.Services.Interfaces;
+using mmTransactionDB.Repository.Interfaces;
 
-namespace mmTransactionDB.Services
+namespace mmTransactionDB.Repository
 {
     public class mmTransactionRepository : ImmTransactionRepository
     {
         private readonly mmTransactionDBContext _mmContext;
+
         public mmTransactionRepository(IServiceScopeFactory factory)
         {
             _mmContext = factory.CreateScope().ServiceProvider.GetRequiredService<mmTransactionDBContext>();

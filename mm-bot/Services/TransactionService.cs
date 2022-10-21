@@ -4,7 +4,7 @@ using mm_bot.Models;
 using mm_bot.Models.ResponseModel;
 using mm_bot.Services.Interfaces;
 using mmTransactionDB.Models;
-using mmTransactionDB.Services.Interfaces;
+using mmTransactionDB.Repository.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,20 +36,43 @@ namespace mm_bot.Services
             _mmTransactionRepository = mmTransactionRepository;
         }
 
-        public async Task TransferSolAsync(string privateKey, string toPublicKey, double lamports, double sol)
+        public async Task StartTransationsAsync(CancellationToken cancellationToken)
         {
+            //ThreadPool.QueueUserWorkItem(async () =>{);
 
+            while (!cancellationToken.IsCancellationRequested)
+            {
+
+            }
+        }
+
+        public async Task TransferSolAsync(WalletModel fromWallet, WalletModel toWallet, long lamports, double sol)
+        {
+            string txid;
+
+            txid = await _cryptoService.TransferSolToAnotherWalletAsync(fromWallet.PrivateKey, toWallet.PublicKey, fromWallet.Lamports, fromWallet.SOL);
+
+            var transaction = await CreateTransactionAsync(txid, "Transfer");
+
+            if (transaction.Status.Equals("Ok"))
+            {
+                await _walletService.UpdateWalletInfoWithTokensAsync(fromWallet);
+                await _walletService.UpdateWalletInfoWithTokensAsync(toWallet);
+            }
         }
 
         public async Task TransferTokenAsync(WalletModel fromWallet, WalletModel toWallet, string mint, string count)
         {
             string txid;
+
             txid = await _cryptoService.TransferTokenToAnotherWalletAsync(fromWallet.PrivateKey, mint, toWallet.PublicKey, count);
+
             var transaction = await CreateTransactionAsync(txid, "Transfer");
 
             if (transaction.Status.Equals("Ok"))
             {
-                await _walletService.UpdateWalletInfoAsync(fromWallet);
+                await _walletService.UpdateWalletInfoWithTokensAsync(fromWallet);
+                await _walletService.UpdateWalletInfoWithTokensAsync(toWallet);
             }
         }
 
@@ -70,14 +93,40 @@ namespace mm_bot.Services
             var hotWallet = await _walletService.GetHotWalletAsync();
             var coldWallets = await _walletService.GetColdWalletsAsync();
 
-            foreach(var coldWallet in coldWallets)
+            var outer = Task.Factory.StartNew(() =>
             {
-                if (coldWallet.Tokens.Where(t => t.Mint == USDCmint).FirstOrDefault() != null)
+                foreach (var coldWallet in coldWallets)
                 {
-                    await TransferTokenAsync(coldWallet, hotWallet, USDCmint, 
-                        coldWallet.Tokens.Where(t => t.Mint == USDCmint).First().Amount);
+                    if (coldWallet.Tokens.Where(t => t.Mint == USDCmint).FirstOrDefault() != null)
+                    {
+                        _ = Task.Factory.StartNew(() =>
+                        TransferTokenAsync(coldWallet, hotWallet, USDCmint,
+                            coldWallet.Tokens.Where(t => t.Mint == USDCmint).First().Amount), TaskCreationOptions.AttachedToParent);
+                    }
                 }
-            }
+            });
+
+            outer.Wait();
+        }
+
+        public async Task TransferAllSOLToHotWalletAsync()
+        {
+            var hotWallet = await _walletService.GetHotWalletAsync();
+            var coldWallets = await _walletService.GetColdWalletsAsync();
+
+            var outer = Task.Factory.StartNew(() =>
+            {
+                foreach (var coldWallet in coldWallets)
+                {
+                    if (coldWallet.SOL != 0)
+                    {
+                        _ = Task.Factory.StartNew(() =>
+                        TransferSolAsync(coldWallet, hotWallet, coldWallet.Lamports, coldWallet.SOL), TaskCreationOptions.AttachedToParent);
+                    }
+                }
+            });
+
+            outer.Wait();
         }
 
         public async Task<mmTransactionModel> GetInfoAboutTransactionAsync(string txid)
@@ -106,7 +155,7 @@ namespace mm_bot.Services
         {
             var tx = await GetInfoAboutTransactionAsync(txid);
 
-            
+
             if (tx.Status.Equals("Ok"))
             {
                 var tokens = await _walletService.GetWalletTokensAsync(tx.WalletAddress);
@@ -118,21 +167,6 @@ namespace mm_bot.Services
             await AddTransactionAsync(tx);
 
             return tx;
-        }
-
-        public async Task TransferAllSOLToHotWalletAsync()
-        {
-
-        }
-
-        public async Task StartTransationsAsync(CancellationToken cancellationToken)
-        {
-            //ThreadPool.QueueUserWorkItem(async () =>{);
-
-            while (!cancellationToken.IsCancellationRequested)
-            {
-
-            }
         }
     }
 }

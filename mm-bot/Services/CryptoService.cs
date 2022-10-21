@@ -41,8 +41,8 @@ namespace mm_bot.Services
         public async Task<JObject> GetInfoAboutWalletAsync(string privateKey)
         {
             _httpClient.DefaultRequestHeaders.Add("x-auth-token", privateKey);
-            
-            HttpResponseMessage response = await _httpClient.GetAsync("wallets"); 
+
+            HttpResponseMessage response = await _httpClient.GetAsync("wallets");
             string responseBody = await response.Content.ReadAsStringAsync();
 
             _httpClient.DefaultRequestHeaders.Remove("x-auth-token");
@@ -78,8 +78,8 @@ namespace mm_bot.Services
                 return tokens;
             }
         }
-        
-        public async Task<string> TransferLamportsToAnotherWalletAsync(string privateKey, string toPublicKey, double lamports, double sol)
+
+        public async Task<string> TransferSolToAnotherWalletAsync(string privateKey, string toPublicKey, double lamports, double sol)
         {
             _httpClient.DefaultRequestHeaders.Add("x-auth-token", privateKey);
 
@@ -93,6 +93,30 @@ namespace mm_bot.Services
             var requestUrl = QueryHelpers.AddQueryString($"wallets/send", parameters);
 
             HttpResponseMessage response = await _httpClient.GetAsync(requestUrl);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+            {
+                int k = 0;
+
+                while (response.StatusCode == System.Net.HttpStatusCode.OK || k == 4)
+                {
+                    await Task.Delay(4000);
+                    k++;
+                    response = await _httpClient.GetAsync(requestUrl);
+                }
+            }
+            else if (response.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                int k = 0;
+
+                while (response.StatusCode == System.Net.HttpStatusCode.OK || k == 3)
+                {
+                    await Task.Delay(120000);
+                    k++;
+                    response = await _httpClient.GetAsync(requestUrl);
+                }
+            }
+
             string responseBody = await response.Content.ReadAsStringAsync();
 
             _httpClient.DefaultRequestHeaders.Remove("x-auth-token");
@@ -116,14 +140,39 @@ namespace mm_bot.Services
             _httpClient.DefaultRequestHeaders.Add("x-auth-token", privateKey);
 
             var parameters = new Dictionary<string, string>()
-            { 
+            {
                 ["to"] = toPublicKey,
-                ["count"] = count
+                ["count"] = count,
+                ["isForbiddenToCloseAccount"] = "true"
             };
 
             var requestUrl = QueryHelpers.AddQueryString($"nft/token/{mint}/transfer", parameters);
 
             HttpResponseMessage response = await _httpClient.GetAsync(requestUrl);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+            {
+                int k = 0;
+
+                while (response.StatusCode == System.Net.HttpStatusCode.OK || k == 4)
+                {
+                    await Task.Delay(4000);
+                    k++;
+                    response = await _httpClient.GetAsync(requestUrl);  
+                }
+            }
+            else if (response.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                int k = 0;
+
+                while (response.StatusCode == System.Net.HttpStatusCode.OK || k == 3)
+                {
+                    await Task.Delay(120000);
+                    k++;
+                    response = await _httpClient.GetAsync(requestUrl);
+                }
+            }
+
             string responseBody = await response.Content.ReadAsStringAsync();
 
             _httpClient.DefaultRequestHeaders.Remove("x-auth-token");

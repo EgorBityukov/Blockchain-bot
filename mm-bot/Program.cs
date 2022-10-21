@@ -36,11 +36,13 @@ IHost host = Host.CreateDefaultBuilder(args)
         });
 
         services.AddTransient<ICommandService, CommandService>();
+        services.AddTransient<ImmTransactionRepository, mmTransactionRepository>();
         services.AddTransient<IWalletRepository, WalletRepository>();
+        services.AddTransient<ITransactionService, TransactionService>();
         services.AddTransient<IWalletService, WalletService>();
         services.AddTransient<ICryptoService, CryptoService>();
         services.AddTransient<ICleanUpService, CleanUpService>();
-        services.AddTransient<ITransactionService, TransactionService>();
+        
 
         services.Configure<ConfigSettings>(config.GetSection("Settings"));
 
