@@ -16,5 +16,8 @@ namespace mm_bot.Services.Interfaces
         public Task AddHotWalletFromConfigAsync(MainWalletInfo mainWalletInfo);
         public Task<WalletModel> GetHotWalletAsync();
         public Task<List<WalletModel>> GetColdWalletsAsync();
+        public Task<WalletModel> GetInfoAboutWalletAsync(string privateKey);
+        public Task<List<TokenModel>> GetWalletTokensAsync(string publicKey);
+        public Task UpdateWalletInfoAsync(WalletModel wallet);
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using mm_bot.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,7 +11,9 @@ namespace mm_bot.Services.Interfaces
     {
         public Task StartTransationsAsync(CancellationToken cancellationToken);
         public Task ExchangeAllTokensToHotWalletAsync();
-        public Task TransferUSDCToHotWalletAsync();
-        public Task TransferSOLToHotWalletAsync();
+        public Task TransferAllUSDCToHotWalletAsync();
+        public Task TransferAllSOLToHotWalletAsync();
+        public Task<mmTransactionModel> GetInfoAboutTransactionAsync(string txid);
+        public Task AddTransactionAsync(mmTransactionModel transaction);
     }
 }

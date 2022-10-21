@@ -5,8 +5,8 @@
   },
   "Settings": {
     "HotWallet": {
-        "PublicKey": "5Bma4BvxiqmW5szfKmGb8H3rrGTdu659ZKtZbs4PMD3j",
-        "PrivateKey": "z/QoSzx0Ifz5rvFuwLN4r9wkfnEfn28FzMUq/pCCVCfrwgHzzCJfkbgK0iAtXCqhmgy0h5hxbhfetXT26g1pmcK1y6yDSfqqy5D2EjKBWc5h1v8FiiI/K9plZxM4GAXom4WzRbVmIQ=="
+      "PublicKey": "5Bma4BvxiqmW5szfKmGb8H3rrGTdu659ZKtZbs4PMD3j",
+      "PrivateKey": "z/QoSzx0Ifz5rvFuwLN4r9wkfnEfn28FzMUq/pCCVCfrwgHzzCJfkbgK0iAtXCqhmgy0h5hxbhfetXT26g1pmcK1y6yDSfqqy5D2EjKBWc5h1v8FiiI/K9plZxM4GAXom4WzRbVmIQ=="
     },
     "ColdWallet": [
       {
@@ -29,6 +29,7 @@
     "PercentageOfRandomTransactionsForAddToken": 0.05,
     "MinimumDelayInSecondsForOneTransactionPerWallet": 180,
     "AutomaticGenerationOfWallets": false,
-    "ColdWalletsCount": 10
+    "ColdWalletsCount": 10,
+    "USDCmint": "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU"
   }
 }

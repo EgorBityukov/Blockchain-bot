@@ -13,6 +13,13 @@ namespace mm_bot.Models
         public string Mint { get; set; }
         public string OwnerId { get; set; }
         public WalletModel Owner { get; set; }
-        public string Amount { get; set; }
+        public string Amount { 
+            get { return Amount; }
+            set { 
+                Amount = value;
+                AmountDouble = Convert.ToDouble(Amount) / 1000000;
+            } 
+        }
+        public double AmountDouble { get; set; }
     }
 }

@@ -26,6 +26,16 @@ namespace mm_bot.Services
             _mapper = mapper;
         }
 
+        public async Task MonitoringSolBalanceAsync(CancellationTokenSource cancellationTokenSourceTransactions)
+        {
+            bool hotWalletBalanceEnough = true;
+
+            if (!hotWalletBalanceEnough)
+            {
+                cancellationTokenSourceTransactions.Cancel();
+            }
+        }
+
         public async Task<List<WalletModel>> GenerateWalletsAsync(int countWallets)
         {
             List<WalletModel> wallets = new List<WalletModel>();
@@ -89,7 +99,7 @@ namespace mm_bot.Services
             var walletInfoJson = await _cryptoService.GetInfoAboutWalletAsync(privateKey);
 
             walletInfo.PrivateKey = privateKey;
-            walletInfo.Lamports = walletInfoJson.Value<double>("lamports");
+            walletInfo.Lamports = walletInfoJson.Value<long>("lamports");
             walletInfo.SOL = walletInfoJson.Value<double>("sol");
             walletInfo.ApproximateMintPrice = walletInfoJson.Value<double>("approximate_mint_price");
             walletInfo.PublicKey = walletInfoJson.Value<string>("public_key");
@@ -114,6 +124,14 @@ namespace mm_bot.Services
             }
 
             return tokens;
+        }
+
+        public async Task UpdateWalletInfoAsync(WalletModel wallet)
+        {
+            var updatedWallet = await GetInfoAboutWalletAsync(wallet.PrivateKey);
+            wallet.Lamports = updatedWallet.Lamports;
+            wallet.SOL = updatedWallet.SOL;
+            wallet.Tokens = await GetWalletTokensAsync(wallet.PublicKey);
         }
 
         public async Task DeleteAllWalletsAsync()

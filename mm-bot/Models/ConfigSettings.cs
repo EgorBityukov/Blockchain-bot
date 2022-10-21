@@ -18,5 +18,6 @@ namespace mm_bot.Models
         public int MinimumDelayInSecondsForOneTransactionPerWallet { get; set; }
         public bool AutomaticGenerationOfWallets { get; set; }
         public int ColdWalletsCount { get; set; }
+        public string USDCmint { get; set; }
     }
 }

@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace mm_bot.Mapper
+namespace mm_bot.MappingProfiles
 {
     public class WalletProfile : Profile
     {
@@ -17,6 +17,9 @@ namespace mm_bot.Mapper
                 .ReverseMap();
 
             CreateMap<Token, TokenModel>()
+                .ReverseMap();
+
+            CreateMap<mmTransaction, mmTransactionModel>()
                 .ReverseMap();
         }
     }

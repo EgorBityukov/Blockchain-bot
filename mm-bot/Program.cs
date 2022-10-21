@@ -2,7 +2,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using mm_bot;
-using mm_bot.Mapper;
+using mm_bot.MappingProfiles;
 using mm_bot.Models;
 using mm_bot.Services;
 using mm_bot.Services.Interfaces;
@@ -23,7 +23,7 @@ IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((hostContext, services) =>
     {
         services.AddHostedService<Worker>();
-        services.AddAutoMapper(typeof(WalletProfile));
+        services.AddAutoMapper(typeof(WalletProfile), typeof(mmTransactionProfile));
 
         services.AddDbContext<mmTransactionDBContext>(
         options => options.UseNpgsql(connectionString));
