@@ -114,13 +114,14 @@ namespace mm_bot.Services
 
             foreach (var token in tokensResponce)
             {
-                tokens.Add(new TokenModel
-                {
-                    PublicKey = token.pubkey,
-                    Mint = token.info.mint,
-                    OwnerId = token.info.owner,
-                    Amount = token.info.amount
-                });
+                    tokens.Add(new TokenModel
+                    {
+                        IdToken = Guid.NewGuid(),
+                        PublicKey = token.pubkey,
+                        Mint = token.info.mint,
+                        OwnerId = token.info.owner,
+                        Amount = token.info.amount
+                    });
             }
 
             return tokens;
@@ -131,6 +132,7 @@ namespace mm_bot.Services
             var updatedWallet = await GetInfoAboutWalletAsync(wallet.PrivateKey);
             wallet.Lamports = updatedWallet.Lamports;
             wallet.SOL = updatedWallet.SOL;
+            await _walletRepository.UpdateWalletAsync(_mapper.Map<Wallet>(wallet));
         }
 
         public async Task UpdateWalletInfoWithTokensAsync(WalletModel wallet)

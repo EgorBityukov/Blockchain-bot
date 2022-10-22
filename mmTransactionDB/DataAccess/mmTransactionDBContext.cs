@@ -20,7 +20,7 @@ namespace mmTransactionDB.DataAccess
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Wallet>()
-                .HasKey(w => w.IdWallet);
+                .HasKey(w => w.PublicKey);
 
             modelBuilder.Entity<Wallet>()
                 .HasIndex(w => new { w.PrivateKey, w.PublicKey })
@@ -32,7 +32,7 @@ namespace mmTransactionDB.DataAccess
             modelBuilder.Entity<Token>()
                 .HasOne(c => c.Owner)
                 .WithMany(u => u.Tokens)
-                .HasForeignKey(k => k.IdToken)
+                .HasForeignKey(k => k.OwnerId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .IsRequired();
 

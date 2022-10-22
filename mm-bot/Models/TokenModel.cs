@@ -14,12 +14,13 @@ namespace mm_bot.Models
         public string OwnerId { get; set; }
         public WalletModel Owner { get; set; }
         public string Amount { 
-            get { return Amount; }
-            set { 
-                Amount = value;
-                AmountDouble = Convert.ToDouble(Amount) / 1000000;
+            get { return amount; }
+            set {
+                amount = value;
+                AmountDouble = Convert.ToDouble(value) / 1000000;
             } 
         }
+        private string amount;
         public double AmountDouble { get; set; }
     }
 }

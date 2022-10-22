@@ -27,6 +27,12 @@ namespace mmTransactionDB.Repository
             await _mmContext.SaveChangesAsync();
         }
 
+        public async Task UpdateWalletAsync(Wallet updateWallet)
+        {
+            _mmContext.Update(updateWallet);
+            await _mmContext.SaveChangesAsync();
+        }
+
         public async Task<bool> CheckWalletNotExistAsync(string privateKey)
         {
             return !(await _mmContext.Wallets.AnyAsync(w => w.PrivateKey.Equals(privateKey)));

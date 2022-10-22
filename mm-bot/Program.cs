@@ -48,6 +48,4 @@ IHost host = Host.CreateDefaultBuilder(args)
 
         services.AddTransient<ConfigSettings>(_ => _.GetRequiredService<IOptions<ConfigSettings>>().Value);
     })
-    .Build();
-
-await host.RunAsync();
+    .Build();await host.RunAsync();
