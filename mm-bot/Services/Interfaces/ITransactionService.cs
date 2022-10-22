@@ -10,7 +10,7 @@ namespace mm_bot.Services.Interfaces
     public interface ITransactionService
     {
         public Task StartTransationsAsync(CancellationToken cancellationToken);
-        public Task ExchangeAllTokensToHotWalletAsync();
+        public Task ExchangeAllTokensOnUSDCAsync();
         public Task TransferAllUSDCToHotWalletAsync();
         public Task TransferAllSOLToHotWalletAsync();
         public Task<mmTransactionModel> GetInfoAboutTransactionAsync(string txid);

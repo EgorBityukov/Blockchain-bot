@@ -21,12 +21,14 @@ namespace mm_bot.Services
         private readonly ICryptoService _cryptoService;
         private readonly ImmTransactionRepository _mmTransactionRepository;
         private readonly IMapper _mapper;
+        private readonly IJupService _jupService;
 
         public TransactionService(ILogger<Worker> logger,
                                   IMapper mapper,
                                   IWalletService walletService,
                                   IOptions<ConfigSettings> options,
                                   ICryptoService cryptoService,
+                                  IJupService jupService,
                                   ImmTransactionRepository mmTransactionRepository)
         {
             _logger = logger;
@@ -43,6 +45,39 @@ namespace mm_bot.Services
             while (!cancellationToken.IsCancellationRequested)
             {
 
+            }
+        }
+
+        public async Task ExchangeTokenAsync(WalletModel hotWalletFeePayer, WalletModel coldWallet, string inputMint, string outputMint, string amount)
+        {
+            var quotes = await _jupService.GetQuoteAsync(inputMint, outputMint, amount);
+
+            JupSwapRequestModel jupSwapRequestModel = new JupSwapRequestModel();
+
+            jupSwapRequestModel.route = quotes.data[0];
+            jupSwapRequestModel.feeAccount = hotWalletFeePayer.PublicKey;
+            jupSwapRequestModel.userPublicKey = coldWallet.PublicKey;
+            jupSwapRequestModel.destinationWallet = hotWalletFeePayer.PublicKey;
+            jupSwapRequestModel.wrapUnwrapSOL = true;
+
+            var swapTransactons = await _jupService.GetSwapTransactionsAsync(jupSwapRequestModel);
+
+            string transactionId;
+
+            if (swapTransactons.setupTransaction != null)
+            {
+                transactionId = await _cryptoService.SignTransactionAsync(coldWallet.PrivateKey, swapTransactons.setupTransaction);
+                await CreateTransactionAsync(transactionId, "Setup");
+            }
+            if (swapTransactons.swapTransaction != null)
+            {
+                transactionId = await _cryptoService.SignTransactionAsync(coldWallet.PrivateKey, swapTransactons.swapTransaction);
+                await CreateTransactionAsync(transactionId, "Exchange");
+            }
+            if (swapTransactons.cleanupTransaction != null)
+            {
+                transactionId = await _cryptoService.SignTransactionAsync(coldWallet.PrivateKey, swapTransactons.cleanupTransaction);
+                await CreateTransactionAsync(transactionId, "CleanUp");
             }
         }
 
@@ -81,10 +116,28 @@ namespace mm_bot.Services
             await _mmTransactionRepository.AddTransaction(_mapper.Map<mmTransaction>(transaction));
         }
 
-        public async Task ExchangeAllTokensToHotWalletAsync()
+        public async Task ExchangeAllTokensOnUSDCAsync()
         {
             var hotWallet = await _walletService.GetHotWalletAsync();
             var coldWallets = await _walletService.GetColdWalletsAsync();
+
+            var outer = Task.Factory.StartNew(() =>
+            {
+                foreach (var coldWallet in coldWallets)
+                {
+                    foreach (var token in coldWallet.Tokens)
+                    {
+                        if (!token.Mint.Equals(_options.Value.USDCmint))
+                        {
+                            _ = Task.Factory.StartNew(() =>
+                            ExchangeTokenAsync(hotWallet, coldWallet, token.Mint, _options.Value.USDCmint, token.Amount), TaskCreationOptions.AttachedToParent);
+                        }
+                    }
+                }
+
+            });
+
+            outer.Wait();
         }
 
         public async Task TransferAllUSDCToHotWalletAsync()
@@ -158,6 +211,7 @@ namespace mm_bot.Services
 
             if (tx.Status.Equals("Ok"))
             {
+                //Update USDC Token Balance
                 var tokens = await _walletService.GetWalletTokensAsync(tx.WalletAddress);
                 tx.BalanceUSDCToken = tokens.Where(t => t.Mint.Equals(_options.Value.USDCmint)).Select(t => t.AmountDouble).FirstOrDefault();
             }

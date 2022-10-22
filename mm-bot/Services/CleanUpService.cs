@@ -29,7 +29,7 @@ namespace mm_bot.Services
 
         public async Task<bool> CleanUpAsync()
         {
-            await _transactionService.ExchangeAllTokensToHotWalletAsync();
+            await _transactionService.ExchangeAllTokensOnUSDCAsync();
             await _transactionService.TransferAllUSDCToHotWalletAsync();
             await _transactionService.TransferAllSOLToHotWalletAsync();
 

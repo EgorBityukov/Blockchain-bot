@@ -210,5 +210,34 @@ namespace mm_bot.Services
                 return transactionInfo;
             }
         }
+
+        public async Task<string> SignTransactionAsync(string privateKey, string txid)
+        {
+            _httpClient.DefaultRequestHeaders.Add("x-auth-token", privateKey);
+
+            var parameters = new Dictionary<string, string>()
+            {
+                ["transaction"] = txid
+            };
+
+            var encodedContent = new FormUrlEncodedContent(parameters);
+
+            HttpResponseMessage response = await _httpClient.PostAsync("transactions/sign", encodedContent);
+            string responseBody = await response.Content.ReadAsStringAsync();
+
+            _httpClient.DefaultRequestHeaders.Remove("x-auth-token");
+
+            JObject txidResponce = JObject.Parse(responseBody);
+
+            if (txidResponce.Value<string>("status").Equals("error"))
+            {
+                _logger.LogError("CryptoService - Sign Transaction Http Request Exception: {0}", txidResponce.GetValue("error"));
+                return txidResponce.GetValue("txid").ToString();
+            }
+            else
+            {
+                return txidResponce.GetValue("txid").ToString();
+            }
+        }
     }
 }

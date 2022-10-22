@@ -18,6 +18,7 @@ var config = new ConfigurationBuilder()
 
 string connectionString = config.GetConnectionString("SqlConnectionString");
 string cryptoApiUrl = config.GetConnectionString("CryptoApiUrl");
+string jupApiUrl = config.GetConnectionString("JupApiUrl");
 
 IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((hostContext, services) =>
@@ -35,12 +36,20 @@ IHost host = Host.CreateDefaultBuilder(args)
             config.DefaultRequestHeaders.Clear();
         });
 
+        services.AddHttpClient("JupClient", config =>
+        {
+            config.BaseAddress = new Uri(jupApiUrl);
+            config.Timeout = new TimeSpan(0, 0, 30);
+            config.DefaultRequestHeaders.Clear();
+        });
+
         services.AddTransient<ICommandService, CommandService>();
         services.AddTransient<ImmTransactionRepository, mmTransactionRepository>();
         services.AddTransient<IWalletRepository, WalletRepository>();
         services.AddTransient<ITransactionService, TransactionService>();
         services.AddTransient<IWalletService, WalletService>();
         services.AddTransient<ICryptoService, CryptoService>();
+        services.AddTransient<IJupService, JupService>();
         services.AddTransient<ICleanUpService, CleanUpService>();
         
 

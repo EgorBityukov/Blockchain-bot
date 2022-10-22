@@ -16,5 +16,6 @@ namespace mm_bot.Services.Interfaces
         public Task<string> TransferSolToAnotherWalletAsync(string privateKey, string toPublicKey, double lamports, double sol);
         public Task<string> TransferTokenToAnotherWalletAsync(string privateKey, string mint, string toPublicKey, string count);
         public Task<TransactionInfoResponseModel> GetInfoAboutTransactionAsync(string txid);
+        public Task<string> SignTransactionAsync(string privateKey, string txid);
     }
 }
