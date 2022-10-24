@@ -29,11 +29,12 @@ IHost host = Host.CreateDefaultBuilder(args)
         services.AddDbContext<mmTransactionDBContext>(
         options => options.UseNpgsql(connectionString));
 
-        services.AddHttpClient("CryptoClient", config =>
+        services.AddHttpClient("CryptoClient", configuration =>
         {
-            config.BaseAddress = new Uri(cryptoApiUrl);
-            config.Timeout = new TimeSpan(0, 0, 30);
-            config.DefaultRequestHeaders.Clear();
+            configuration.BaseAddress = new Uri(cryptoApiUrl);
+            configuration.Timeout = new TimeSpan(0, 0, 30);
+            configuration.DefaultRequestHeaders.Clear();
+            configuration.DefaultRequestHeaders.Add("X-Fee-Payer", config.GetSection("Settings:HotWallet:PrivateKey").Value);
         });
 
         services.AddHttpClient("JupClient", config =>

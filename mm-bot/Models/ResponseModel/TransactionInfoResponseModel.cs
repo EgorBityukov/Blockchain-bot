@@ -43,9 +43,9 @@ namespace mm_bot.Models.ResponseModel
         public List<object> innerInstructions { get; set; }
         public LoadedAddresses loadedAddresses { get; set; }
         public List<string> logMessages { get; set; }
-        public List<int> postBalances { get; set; }
+        public List<long> postBalances { get; set; }
         public List<PostTokenBalance> postTokenBalances { get; set; }
-        public List<int> preBalances { get; set; }
+        public List<long> preBalances { get; set; }
         public List<PreTokenBalance> preTokenBalances { get; set; }
         public List<object> rewards { get; set; }
         public Status status { get; set; }
@@ -113,7 +113,7 @@ namespace mm_bot.Models.ResponseModel
     {
         public string amount { get; set; }
         public int decimals { get; set; }
-        public double uiAmount { get; set; }
+        public double? uiAmount { get; set; }
         public string uiAmountString { get; set; }
     }
 }

@@ -79,14 +79,13 @@ namespace mm_bot.Services
             }
         }
 
-        public async Task<string> TransferSolToAnotherWalletAsync(string privateKey, string toPublicKey, double lamports, double sol)
+        public async Task<string> TransferSolToAnotherWalletAsync(string privateKey, string toPublicKey, double sol)
         {
             _httpClient.DefaultRequestHeaders.Add("x-auth-token", privateKey);
 
             var parameters = new Dictionary<string, string>()
             {
                 ["to"] = toPublicKey,
-                ["lamports"] = lamports.ToString(),
                 ["sol"] = sol.ToString()
             };
 
@@ -125,13 +124,13 @@ namespace mm_bot.Services
 
             if (transferLamportsResponce.Value<string>("status").Equals("error"))
             {
-                _logger.LogError("CryptoService - Transfer Lamports/Sol Http Request Exception: {0} /n" +
-                    "Transaction Id: {1}", transferLamportsResponce.GetValue("error"), transferLamportsResponce.GetValue("txid"));
-                return transferLamportsResponce.GetValue("txid").ToString();
+                _logger.LogError("CryptoService - Transfer Lamports/Sol Http Request Exception: {0}",
+                    transferLamportsResponce.GetValue("error"));
+                return null;
             }
             else
             {
-                return transferLamportsResponce.GetValue("txid").ToString();
+                return transferLamportsResponce.GetValue("data").Value<string>("txid");
             }
         }
 
@@ -158,7 +157,7 @@ namespace mm_bot.Services
                 {
                     await Task.Delay(4000);
                     k++;
-                    response = await _httpClient.GetAsync(requestUrl);  
+                    response = await _httpClient.GetAsync(requestUrl);
                 }
             }
             else if (response.StatusCode != System.Net.HttpStatusCode.OK)
@@ -181,13 +180,13 @@ namespace mm_bot.Services
 
             if (transferTokenResponce.Value<string>("status").Equals("error"))
             {
-                _logger.LogError("CryptoService - Tranfer Tokens Http Request Exception: {0} /n" +
-                    "Transaction Id: {1}", transferTokenResponce.GetValue("error"), transferTokenResponce.GetValue("txid"));
-                return transferTokenResponce.GetValue("txid").ToString();
+                _logger.LogError("CryptoService - Tranfer Tokens Http Request Exception: {0}",
+                    transferTokenResponce.GetValue("error"));
+                return null;
             }
             else
             {
-                return transferTokenResponce.GetValue("txid").ToString();
+                return transferTokenResponce.GetValue("data").Value<string>("txid");
             }
         }
 
@@ -198,10 +197,10 @@ namespace mm_bot.Services
 
             JObject transactionInfoResponce = JObject.Parse(responseBody);
 
-            if (transactionInfoResponce.Value<string>("status").Equals("error"))
+            if (transactionInfoResponce.ContainsKey("status"))
             {
                 _logger.LogError("CryptoService - Get Transaction info Http Request Exception: {0} /n" +
-                    "Transaction Id: {1}", transactionInfoResponce.GetValue("error"), transactionInfoResponce.GetValue("txid"));
+                    "Transaction Id: {1}", transactionInfoResponce.GetValue("error"));
                 return null;
             }
             else

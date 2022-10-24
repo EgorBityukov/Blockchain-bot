@@ -36,6 +36,8 @@ namespace mm_bot.Services
             _options = options;
             _cryptoService = cryptoService;
             _mmTransactionRepository = mmTransactionRepository;
+            _jupService = jupService;
+            _mapper = mapper;
         }
 
         public async Task StartTransationsAsync(CancellationToken cancellationToken)
@@ -85,7 +87,7 @@ namespace mm_bot.Services
         {
             string txid;
 
-            txid = await _cryptoService.TransferSolToAnotherWalletAsync(fromWallet.PrivateKey, toWallet.PublicKey, fromWallet.Lamports, fromWallet.SOL);
+            txid = await _cryptoService.TransferSolToAnotherWalletAsync(fromWallet.PrivateKey, toWallet.PublicKey, fromWallet.SOL);
 
             var transaction = await CreateTransactionAsync(txid, "Transfer");
 
@@ -121,23 +123,22 @@ namespace mm_bot.Services
             var hotWallet = await _walletService.GetHotWalletAsync();
             var coldWallets = await _walletService.GetColdWalletsAsync();
 
-            var outer = Task.Factory.StartNew(() =>
-            {
+            //var outer = Task.Factory.StartNew(() =>
+            //{
                 foreach (var coldWallet in coldWallets)
                 {
                     foreach (var token in coldWallet.Tokens)
                     {
-                        if (!token.Mint.Equals(_options.Value.USDCmint))
+                        if (!token.Mint.Equals(_options.Value.USDCmint) && token.AmountDouble != 0.0)
                         {
                             _ = Task.Factory.StartNew(() =>
                             ExchangeTokenAsync(hotWallet, coldWallet, token.Mint, _options.Value.USDCmint, token.Amount), TaskCreationOptions.AttachedToParent);
                         }
                     }
                 }
+            //});
 
-            });
-
-            outer.Wait();
+            //outer.Wait();
         }
 
         public async Task TransferAllUSDCToHotWalletAsync()
@@ -146,20 +147,21 @@ namespace mm_bot.Services
             var hotWallet = await _walletService.GetHotWalletAsync();
             var coldWallets = await _walletService.GetColdWalletsAsync();
 
-            var outer = Task.Factory.StartNew(() =>
-            {
+            //var outer = Task.Factory.StartNew(() =>
+            //{
                 foreach (var coldWallet in coldWallets)
                 {
-                    if (coldWallet.Tokens.Where(t => t.Mint == USDCmint).FirstOrDefault() != null)
+                    if (coldWallet.Tokens.Where(t => t.Mint == USDCmint).FirstOrDefault() != null 
+                    && coldWallet.Tokens.Where(t => t.Mint == USDCmint).FirstOrDefault().AmountDouble != 0.0)
                     {
-                        _ = Task.Factory.StartNew(() =>
-                        TransferTokenAsync(coldWallet, hotWallet, USDCmint,
-                            coldWallet.Tokens.Where(t => t.Mint == USDCmint).First().Amount), TaskCreationOptions.AttachedToParent);
+                    //_ = Task.Factory.StartNew(() =>
+                    await TransferTokenAsync(coldWallet, hotWallet, USDCmint,
+                        coldWallet.Tokens.Where(t => t.Mint == USDCmint).First().Amount);//, TaskCreationOptions.AttachedToParent);
                     }
                 }
-            });
+            //});
 
-            outer.Wait();
+            //outer.Wait();
         }
 
         public async Task TransferAllSOLToHotWalletAsync()
@@ -167,39 +169,45 @@ namespace mm_bot.Services
             var hotWallet = await _walletService.GetHotWalletAsync();
             var coldWallets = await _walletService.GetColdWalletsAsync();
 
-            var outer = Task.Factory.StartNew(() =>
-            {
+            //var outer = Task.Factory.StartNew(() =>
+            //{
                 foreach (var coldWallet in coldWallets)
                 {
                     if (coldWallet.SOL != 0)
                     {
-                        _ = Task.Factory.StartNew(() =>
-                        TransferSolAsync(coldWallet, hotWallet, coldWallet.Lamports, coldWallet.SOL), TaskCreationOptions.AttachedToParent);
+                    //_ = Task.Factory.StartNew(() =>
+                    await TransferSolAsync(coldWallet, hotWallet, coldWallet.Lamports, coldWallet.SOL);//, TaskCreationOptions.AttachedToParent);
                     }
                 }
-            });
+            //});
 
-            outer.Wait();
+            //outer.Wait();
         }
 
         public async Task<mmTransactionModel> GetInfoAboutTransactionAsync(string txid)
         {
             TransactionInfoResponseModel transactionInfo = await _cryptoService.GetInfoAboutTransactionAsync(txid);
-            mmTransactionModel transaction = new mmTransactionModel()
+            mmTransactionModel transaction;
+            try
             {
-                Status = transactionInfo.result.meta.status.Err == null ? "Ok" : "Error",
-                Date = DateTime.Now,
-                WalletAddress = transactionInfo.result.transaction.feePayer,
-                SendTokenMint = transactionInfo.result.meta.preTokenBalances
-                .Where(q => q.accountIndex == 1).First().mint,
-                SendTokenCount = transactionInfo.result.meta.postTokenBalances
-                .Where(q => q.accountIndex == 1).First().uiTokenAmount.uiAmount - transactionInfo.result.meta.preTokenBalances.Where(q => q.accountIndex == 1).First().uiTokenAmount.uiAmount,
-                RecieveTokenMint = transactionInfo.result.meta.postTokenBalances
-                .Where(q => q.accountIndex == 2).First().mint,
-                RecieveTokenCount = transactionInfo.result.meta.preTokenBalances
-                .Where(q => q.accountIndex == 2).First().uiTokenAmount.uiAmount - transactionInfo.result.meta.postTokenBalances.Where(q => q.accountIndex == 2).First().uiTokenAmount.uiAmount,
-                BalanceXToken = (double)transactionInfo.result.meta.postBalances.First() / 1000000000
-            };
+                transaction = new mmTransactionModel();
+                transaction.Status = transactionInfo.result.meta.status.Err == null ? "Ok" : "Error";
+                transaction.Date = DateTime.Now;
+                transaction.WalletAddress = transactionInfo.result.transaction.feePayer;
+                transaction.SendTokenMint = transactionInfo.result.meta.preTokenBalances
+                 .First().mint;
+                transaction.SendTokenCount = (double)(transactionInfo.result.meta.postTokenBalances
+                 .First().uiTokenAmount.uiAmount.GetValueOrDefault(0) - transactionInfo.result.meta.preTokenBalances.First().uiTokenAmount.uiAmount.GetValueOrDefault(0));
+                    transaction.RecieveTokenMint = transactionInfo.result.meta.postTokenBalances
+                    .Last().mint;
+                transaction.RecieveTokenCount = (double)(transactionInfo.result.meta.preTokenBalances
+                .Last().uiTokenAmount.uiAmount.GetValueOrDefault(0) - transactionInfo.result.meta.postTokenBalances.Last().uiTokenAmount.uiAmount.GetValueOrDefault(0));
+                   transaction.BalanceXToken = (double)transactionInfo.result.meta.postBalances.First() / 1000000000;
+               
+            }catch (Exception ex)
+            {
+                transaction = null;
+            }
 
             return transaction;
         }

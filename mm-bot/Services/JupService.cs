@@ -41,7 +41,7 @@ namespace mm_bot.Services
 
             JObject quoteResponce = JObject.Parse(responseBody);
 
-            if (quoteResponce.Children().Contains("error"))
+            if (quoteResponce.ContainsKey("error"))
             {
                 _logger.LogError("JupService - Get Quote Http Request Exception /n" +
                     "Message: {1}", quoteResponce.GetValue("message"));
