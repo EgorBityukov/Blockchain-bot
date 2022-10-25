@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using mmTransactionDB.DataAccess;
@@ -11,9 +12,10 @@ using mmTransactionDB.DataAccess;
 namespace mmTransactionDB.Migrations
 {
     [DbContext(typeof(mmTransactionDBContext))]
-    partial class mmTransactionDBContextModelSnapshot : ModelSnapshot
+    [Migration("20221024125601_TimestampWithoutTimeZone")]
+    partial class TimestampWithoutTimeZone
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -33,7 +35,7 @@ namespace mmTransactionDB.Migrations
                     b.Property<double>("BalanceXToken")
                         .HasColumnType("double precision");
 
-                    b.Property<DateTime>("Date")
+                    b.Property<DateTimeOffset>("Date")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("OperationType")
@@ -64,8 +66,9 @@ namespace mmTransactionDB.Migrations
 
             modelBuilder.Entity("mmTransactionDB.Models.Token", b =>
                 {
-                    b.Property<string>("PublicKey")
-                        .HasColumnType("text");
+                    b.Property<Guid>("IdToken")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Amount")
                         .HasColumnType("text");
@@ -80,7 +83,10 @@ namespace mmTransactionDB.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("PublicKey");
+                    b.Property<string>("PublicKey")
+                        .HasColumnType("text");
+
+                    b.HasKey("IdToken");
 
                     b.HasIndex("OwnerId");
 
@@ -97,6 +103,9 @@ namespace mmTransactionDB.Migrations
 
                     b.Property<bool>("HotWallet")
                         .HasColumnType("boolean");
+
+                    b.Property<Guid>("IdWallet")
+                        .HasColumnType("uuid");
 
                     b.Property<long>("Lamports")
                         .HasColumnType("bigint");

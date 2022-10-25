@@ -3,7 +3,6 @@ namespace mmTransactionDB.Models
 {
     public class Wallet
     {
-        public Guid IdWallet { get; set; }
         public string PublicKey { get; set; }
         public string PrivateKey { get; set; }
         public long Lamports { get; set; }

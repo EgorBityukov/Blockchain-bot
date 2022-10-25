@@ -8,7 +8,6 @@ namespace mmTransactionDB.Models
 {
     public class Token
     {
-        public Guid IdToken { get; set; }
         public string PublicKey { get; set; }
         public string Mint { get; set; }
         public string OwnerId { get; set; }

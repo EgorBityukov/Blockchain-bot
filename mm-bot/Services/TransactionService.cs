@@ -91,10 +91,13 @@ namespace mm_bot.Services
 
             var transaction = await CreateTransactionAsync(txid, "Transfer");
 
-            if (transaction.Status.Equals("Ok"))
+            if (transaction != null)
             {
-                await _walletService.UpdateWalletInfoWithTokensAsync(fromWallet);
-                await _walletService.UpdateWalletInfoWithTokensAsync(toWallet);
+                if (transaction.Status.Equals("Ok"))
+                {
+                    await _walletService.UpdateWalletInfoWithTokensAsync(fromWallet);
+                    await _walletService.UpdateWalletInfoWithTokensAsync(toWallet);
+                }
             }
         }
 
@@ -106,10 +109,13 @@ namespace mm_bot.Services
 
             var transaction = await CreateTransactionAsync(txid, "Transfer");
 
-            if (transaction.Status.Equals("Ok"))
+            if (transaction != null)
             {
-                await _walletService.UpdateWalletInfoWithTokensAsync(fromWallet);
-                await _walletService.UpdateWalletInfoWithTokensAsync(toWallet);
+                if (transaction.Status.Equals("Ok"))
+                {
+                    await _walletService.UpdateWalletInfoWithTokensAsync(fromWallet);
+                    await _walletService.UpdateWalletInfoWithTokensAsync(toWallet);
+                }
             }
         }
 
@@ -125,17 +131,17 @@ namespace mm_bot.Services
 
             //var outer = Task.Factory.StartNew(() =>
             //{
-                foreach (var coldWallet in coldWallets)
+            foreach (var coldWallet in coldWallets)
+            {
+                foreach (var token in coldWallet.Tokens)
                 {
-                    foreach (var token in coldWallet.Tokens)
+                    if (!token.Mint.Equals(_options.Value.USDCmint) && token.AmountDouble != 0.0)
                     {
-                        if (!token.Mint.Equals(_options.Value.USDCmint) && token.AmountDouble != 0.0)
-                        {
-                            _ = Task.Factory.StartNew(() =>
-                            ExchangeTokenAsync(hotWallet, coldWallet, token.Mint, _options.Value.USDCmint, token.Amount), TaskCreationOptions.AttachedToParent);
-                        }
+                        _ = Task.Factory.StartNew(() =>
+                        ExchangeTokenAsync(hotWallet, coldWallet, token.Mint, _options.Value.USDCmint, token.Amount), TaskCreationOptions.AttachedToParent);
                     }
                 }
+            }
             //});
 
             //outer.Wait();
@@ -149,16 +155,16 @@ namespace mm_bot.Services
 
             //var outer = Task.Factory.StartNew(() =>
             //{
-                foreach (var coldWallet in coldWallets)
+            foreach (var coldWallet in coldWallets)
+            {
+                if (coldWallet.Tokens.Where(t => t.Mint == USDCmint).FirstOrDefault() != null
+                && coldWallet.Tokens.Where(t => t.Mint == USDCmint).FirstOrDefault().AmountDouble != 0.0)
                 {
-                    if (coldWallet.Tokens.Where(t => t.Mint == USDCmint).FirstOrDefault() != null 
-                    && coldWallet.Tokens.Where(t => t.Mint == USDCmint).FirstOrDefault().AmountDouble != 0.0)
-                    {
                     //_ = Task.Factory.StartNew(() =>
                     await TransferTokenAsync(coldWallet, hotWallet, USDCmint,
-                        coldWallet.Tokens.Where(t => t.Mint == USDCmint).First().Amount);//, TaskCreationOptions.AttachedToParent);
-                    }
+                        "1");//coldWallet.Tokens.Where(t => t.Mint == USDCmint).First().Amount);//, TaskCreationOptions.AttachedToParent);
                 }
+            }
             //});
 
             //outer.Wait();
@@ -171,14 +177,14 @@ namespace mm_bot.Services
 
             //var outer = Task.Factory.StartNew(() =>
             //{
-                foreach (var coldWallet in coldWallets)
+            foreach (var coldWallet in coldWallets)
+            {
+                if (coldWallet.SOL != 0)
                 {
-                    if (coldWallet.SOL != 0)
-                    {
                     //_ = Task.Factory.StartNew(() =>
                     await TransferSolAsync(coldWallet, hotWallet, coldWallet.Lamports, coldWallet.SOL);//, TaskCreationOptions.AttachedToParent);
-                    }
                 }
+            }
             //});
 
             //outer.Wait();
@@ -192,19 +198,20 @@ namespace mm_bot.Services
             {
                 transaction = new mmTransactionModel();
                 transaction.Status = transactionInfo.result.meta.status.Err == null ? "Ok" : "Error";
-                transaction.Date = DateTime.Now;
+                transaction.Date = DateTime.UtcNow;
                 transaction.WalletAddress = transactionInfo.result.transaction.feePayer;
                 transaction.SendTokenMint = transactionInfo.result.meta.preTokenBalances
                  .First().mint;
-                transaction.SendTokenCount = (double)(transactionInfo.result.meta.postTokenBalances
-                 .First().uiTokenAmount.uiAmount.GetValueOrDefault(0) - transactionInfo.result.meta.preTokenBalances.First().uiTokenAmount.uiAmount.GetValueOrDefault(0));
-                    transaction.RecieveTokenMint = transactionInfo.result.meta.postTokenBalances
-                    .Last().mint;
-                transaction.RecieveTokenCount = (double)(transactionInfo.result.meta.preTokenBalances
-                .Last().uiTokenAmount.uiAmount.GetValueOrDefault(0) - transactionInfo.result.meta.postTokenBalances.Last().uiTokenAmount.uiAmount.GetValueOrDefault(0));
-                   transaction.BalanceXToken = (double)transactionInfo.result.meta.postBalances.First() / 1000000000;
-               
-            }catch (Exception ex)
+                transaction.SendTokenCount = (double)(transactionInfo.result.meta.preTokenBalances
+                 .First().uiTokenAmount.uiAmount.GetValueOrDefault(0) - transactionInfo.result.meta.postTokenBalances.First().uiTokenAmount.uiAmount.GetValueOrDefault(0));
+                transaction.RecieveTokenMint = transactionInfo.result.meta.postTokenBalances
+                .Last().mint;
+                transaction.RecieveTokenCount = (double)(transactionInfo.result.meta.postTokenBalances
+                .Last().uiTokenAmount.uiAmount.GetValueOrDefault(0) - transactionInfo.result.meta.preTokenBalances.Last().uiTokenAmount.uiAmount.GetValueOrDefault(0));
+                transaction.BalanceXToken = (double)transactionInfo.result.meta.postBalances.First() / 1000000000;
+
+            }
+            catch (Exception ex)
             {
                 transaction = null;
             }
@@ -216,17 +223,21 @@ namespace mm_bot.Services
         {
             var tx = await GetInfoAboutTransactionAsync(txid);
 
-
-            if (tx.Status.Equals("Ok"))
+            if (tx != null)
             {
-                //Update USDC Token Balance
-                var tokens = await _walletService.GetWalletTokensAsync(tx.WalletAddress);
-                tx.BalanceUSDCToken = tokens.Where(t => t.Mint.Equals(_options.Value.USDCmint)).Select(t => t.AmountDouble).FirstOrDefault();
+                tx.txId = txid;
+
+                if (tx.Status.Equals("Ok"))
+                {
+                    //Update USDC Token Balance
+                    var tokens = await _walletService.GetWalletTokensAsync(tx.WalletAddress);
+                    tx.BalanceUSDCToken = tokens.Where(t => t.Mint.Equals(_options.Value.USDCmint)).Select(t => t.AmountDouble).FirstOrDefault();
+                }
+
+                tx.OperationType = operationType;
+
+                await AddTransactionAsync(tx);
             }
-
-            tx.OperationType = operationType;
-
-            await AddTransactionAsync(tx);
 
             return tx;
         }

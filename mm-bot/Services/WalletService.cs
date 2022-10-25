@@ -28,9 +28,10 @@ namespace mm_bot.Services
 
         public async Task MonitoringSolBalanceAsync(CancellationTokenSource cancellationTokenSourceTransactions)
         {
-            bool hotWalletBalanceEnough = true;
+            var hotWallet = await GetHotWalletAsync();
+            await UpdateWalletInfoWithoutTokensAsync(hotWallet);
 
-            if (!hotWalletBalanceEnough)
+            if (hotWallet.SOL < 0.1)
             {
                 cancellationTokenSourceTransactions.Cancel();
             }
@@ -116,7 +117,6 @@ namespace mm_bot.Services
             {
                     tokens.Add(new TokenModel
                     {
-                        IdToken = Guid.NewGuid(),
                         PublicKey = token.pubkey,
                         Mint = token.info.mint,
                         OwnerId = token.info.owner,
@@ -141,6 +141,7 @@ namespace mm_bot.Services
             wallet.Lamports = updatedWallet.Lamports;
             wallet.SOL = updatedWallet.SOL;
             wallet.Tokens = await GetWalletTokensAsync(wallet.PublicKey);
+            await _walletRepository.UpdateWalletAsync(_mapper.Map<Wallet>(wallet));
         }
 
         public async Task DeleteAllWalletsAsync()

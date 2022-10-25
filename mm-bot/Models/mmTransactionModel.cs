@@ -8,7 +8,6 @@ namespace mm_bot.Models
 {
     public class mmTransactionModel
     {
-        public string Id { get; set; }
         public string txId { get; set; }
         public string Status { get; set; }
         public DateTime Date { get; set; }

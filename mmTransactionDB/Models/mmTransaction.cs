@@ -2,7 +2,6 @@
 {
     public class mmTransaction
     {
-        public string Id { get; set; }
         public string txId { get; set; }
         public string Status { get; set; }
         public DateTime Date { get; set; }

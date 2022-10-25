@@ -8,7 +8,6 @@ namespace mm_bot.Models
 {
     public class WalletModel
     {
-        public Guid IdWallet { get; set; }
         public string PublicKey { get; set; }
         public string PrivateKey { get; set; }
         public long Lamports { get; set; }

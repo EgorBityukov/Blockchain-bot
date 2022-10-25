@@ -192,7 +192,33 @@ namespace mm_bot.Services
 
         public async Task<TransactionInfoResponseModel> GetInfoAboutTransactionAsync(string txid)
         {
-            HttpResponseMessage response = await _httpClient.GetAsync($"transactions/{txid}/");
+            var requestUrl = $"transactions/{txid}/";
+
+            HttpResponseMessage response = await _httpClient.GetAsync(requestUrl);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+            {
+                int k = 0;
+
+                while (response.StatusCode == System.Net.HttpStatusCode.OK || k == 4)
+                {
+                    await Task.Delay(4000);
+                    k++;
+                    response = await _httpClient.GetAsync(requestUrl);
+                }
+            }
+            else if (response.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                int k = 0;
+
+                while (response.StatusCode == System.Net.HttpStatusCode.OK || k == 3)
+                {
+                    await Task.Delay(120000);
+                    k++;
+                    response = await _httpClient.GetAsync(requestUrl);
+                }
+            }
+
             string responseBody = await response.Content.ReadAsStringAsync();
 
             JObject transactionInfoResponce = JObject.Parse(responseBody);

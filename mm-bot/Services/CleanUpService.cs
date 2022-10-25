@@ -31,7 +31,7 @@ namespace mm_bot.Services
         {
             //await _transactionService.ExchangeAllTokensOnUSDCAsync();
             await _transactionService.TransferAllUSDCToHotWalletAsync();
-            await _transactionService.TransferAllSOLToHotWalletAsync();
+            //await _transactionService.TransferAllSOLToHotWalletAsync();
 
             return true;
         }

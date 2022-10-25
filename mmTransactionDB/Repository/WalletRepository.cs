@@ -29,7 +29,11 @@ namespace mmTransactionDB.Repository
 
         public async Task UpdateWalletAsync(Wallet updateWallet)
         {
-            _mmContext.Update(updateWallet);
+            var databaseWallet = _mmContext.Wallets.Where(w => w.PublicKey == updateWallet.PublicKey).First();
+            databaseWallet.Lamports = updateWallet.Lamports;
+            databaseWallet.SOL = updateWallet.SOL;
+            databaseWallet.Tokens = updateWallet.Tokens;
+
             await _mmContext.SaveChangesAsync();
         }
 

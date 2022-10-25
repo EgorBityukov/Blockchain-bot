@@ -27,7 +27,7 @@ namespace mmTransactionDB.DataAccess
                 .IsUnique(true);
 
             modelBuilder.Entity<Token>()
-                .HasKey(t => t.IdToken);
+                .HasKey(t => t.PublicKey);
 
             modelBuilder.Entity<Token>()
                 .HasOne(c => c.Owner)
@@ -37,7 +37,7 @@ namespace mmTransactionDB.DataAccess
                 .IsRequired();
 
             modelBuilder.Entity<mmTransaction>()
-                .HasKey(t => t.Id);
+                .HasKey(t => t.txId);
 
             base.OnModelCreating(modelBuilder);
         }
