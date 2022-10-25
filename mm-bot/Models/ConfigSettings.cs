@@ -10,10 +10,10 @@ namespace mm_bot.Models
     {
         public MainWalletInfo HotWallet { get; set; }
         public List<MainWalletInfo> ColdWallet { get; set; }
-        public double ColdStorageBaseVolumeUSDC { get; set; }
-        public double ColdStorageBaseVolumeSOL { get; set; }
         public string MainExchangeToken { get; set; }
-        public double DailyTradingVolumeUSDC { get; set; }
+        public double DailyTradingVolumeSolperColdWallet { get; set; }
+        public double DailyTradingVolumeUSDCperColdWallet { get; set; }
+        public double DailyTradingVolumeInUSDCperXtoken { get; set; }
         public double PercentageOfRandomTransactionsForAddToken { get; set; }
         public int MinimumDelayInSecondsForOneTransactionPerWallet { get; set; }
         public bool AutomaticGenerationOfWallets { get; set; }

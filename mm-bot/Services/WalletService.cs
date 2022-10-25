@@ -26,14 +26,19 @@ namespace mm_bot.Services
             _mapper = mapper;
         }
 
-        public async Task MonitoringSolBalanceAsync(CancellationTokenSource cancellationTokenSourceTransactions)
+        public async Task MonitoringSolBalanceAsync(CancellationTokenSource cancellationTokenSourceTransactions, CancellationToken cancellationToken)
         {
-            var hotWallet = await GetHotWalletAsync();
-            await UpdateWalletInfoWithoutTokensAsync(hotWallet);
-
-            if (hotWallet.SOL < 0.1)
+            while (!cancellationToken.IsCancellationRequested)
             {
-                cancellationTokenSourceTransactions.Cancel();
+                var hotWallet = await GetHotWalletAsync();
+                await UpdateWalletInfoWithoutTokensAsync(hotWallet);
+
+                if (hotWallet.SOL < 0.1)
+                {
+                    cancellationTokenSourceTransactions.Cancel();
+                }
+
+                await Task.Delay(10800000, cancellationToken);
             }
         }
 

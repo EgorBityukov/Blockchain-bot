@@ -20,5 +20,10 @@ namespace mmTransactionDB.Repository
             await _mmContext.mmTransactions.AddAsync(mmTran);
             await _mmContext.SaveChangesAsync();
         }
+
+        public async Task<List<mmTransaction>> GetTodayTransactionsAsync()
+        {
+            return await _mmContext.mmTransactions.Where(t => t.Date == DateTime.Today).ToListAsync();
+        }
     }
 }

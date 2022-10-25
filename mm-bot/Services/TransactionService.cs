@@ -40,46 +40,38 @@ namespace mm_bot.Services
             _mapper = mapper;
         }
 
-        public async Task StartTransationsAsync(CancellationToken cancellationToken)
-        {
-            //ThreadPool.QueueUserWorkItem(async () =>{);
-
-            while (!cancellationToken.IsCancellationRequested)
-            {
-
-            }
-        }
-
-        public async Task ExchangeTokenAsync(WalletModel hotWalletFeePayer, WalletModel coldWallet, string inputMint, string outputMint, string amount)
+        public async Task ExchangeTokenAsync(WalletModel hotWalletFeePayer, WalletModel coldWallet, string inputMint, string outputMint, double amount)
         {
             var quotes = await _jupService.GetQuoteAsync(inputMint, outputMint, amount);
 
             JupSwapRequestModel jupSwapRequestModel = new JupSwapRequestModel();
 
-            jupSwapRequestModel.route = quotes.data[0];
-            jupSwapRequestModel.feeAccount = hotWalletFeePayer.PublicKey;
-            jupSwapRequestModel.userPublicKey = coldWallet.PublicKey;
-            jupSwapRequestModel.destinationWallet = hotWalletFeePayer.PublicKey;
-            jupSwapRequestModel.wrapUnwrapSOL = true;
-
-            var swapTransactons = await _jupService.GetSwapTransactionsAsync(jupSwapRequestModel);
-
-            string transactionId;
-
-            if (swapTransactons.setupTransaction != null)
+            if (quotes != null)
             {
-                transactionId = await _cryptoService.SignTransactionAsync(coldWallet.PrivateKey, swapTransactons.setupTransaction);
-                await CreateTransactionAsync(transactionId, "Setup");
-            }
-            if (swapTransactons.swapTransaction != null)
-            {
-                transactionId = await _cryptoService.SignTransactionAsync(coldWallet.PrivateKey, swapTransactons.swapTransaction);
-                await CreateTransactionAsync(transactionId, "Exchange");
-            }
-            if (swapTransactons.cleanupTransaction != null)
-            {
-                transactionId = await _cryptoService.SignTransactionAsync(coldWallet.PrivateKey, swapTransactons.cleanupTransaction);
-                await CreateTransactionAsync(transactionId, "CleanUp");
+                jupSwapRequestModel.route = quotes.data[0];
+                jupSwapRequestModel.feeAccount = hotWalletFeePayer.PublicKey;
+                jupSwapRequestModel.userPublicKey = coldWallet.PublicKey;
+                jupSwapRequestModel.wrapUnwrapSOL = true;
+
+                var swapTransactons = await _jupService.GetSwapTransactionsAsync(jupSwapRequestModel);
+
+                string transactionId;
+
+                if (swapTransactons.setupTransaction != null)
+                {
+                    transactionId = await _cryptoService.SignTransactionAsync(coldWallet.PrivateKey, swapTransactons.setupTransaction);
+                    await CreateTransactionAsync(transactionId, "Setup", coldWallet, coldWallet, inputMint, outputMint, amount);
+                }
+                if (swapTransactons.swapTransaction != null)
+                {
+                    transactionId = await _cryptoService.SignTransactionAsync(coldWallet.PrivateKey, swapTransactons.swapTransaction);
+                    await CreateTransactionAsync(transactionId, "Exchange", coldWallet, coldWallet, inputMint, outputMint, amount);
+                }
+                if (swapTransactons.cleanupTransaction != null)
+                {
+                    transactionId = await _cryptoService.SignTransactionAsync(coldWallet.PrivateKey, swapTransactons.cleanupTransaction);
+                    await CreateTransactionAsync(transactionId, "CleanUp", coldWallet, coldWallet, inputMint, outputMint, amount);
+                }
             }
         }
 
@@ -87,9 +79,9 @@ namespace mm_bot.Services
         {
             string txid;
 
-            txid = await _cryptoService.TransferSolToAnotherWalletAsync(fromWallet.PrivateKey, toWallet.PublicKey, fromWallet.SOL);
+            txid = await _cryptoService.TransferSolToAnotherWalletAsync(fromWallet.PrivateKey, toWallet.PublicKey, sol);
 
-            var transaction = await CreateTransactionAsync(txid, "Transfer");
+            var transaction = await CreateTransactionAsync(txid, "Transfer", fromWallet, toWallet, "SOL", "SOL", sol);
 
             if (transaction != null)
             {
@@ -101,13 +93,13 @@ namespace mm_bot.Services
             }
         }
 
-        public async Task TransferTokenAsync(WalletModel fromWallet, WalletModel toWallet, string mint, string count)
+        public async Task TransferTokenAsync(WalletModel fromWallet, WalletModel toWallet, string mint, double count)
         {
             string txid;
 
             txid = await _cryptoService.TransferTokenToAnotherWalletAsync(fromWallet.PrivateKey, mint, toWallet.PublicKey, count);
 
-            var transaction = await CreateTransactionAsync(txid, "Transfer");
+            var transaction = await CreateTransactionAsync(txid, "Transfer", fromWallet, toWallet, mint, mint, count);
 
             if (transaction != null)
             {
@@ -137,8 +129,9 @@ namespace mm_bot.Services
                 {
                     if (!token.Mint.Equals(_options.Value.USDCmint) && token.AmountDouble != 0.0)
                     {
-                        _ = Task.Factory.StartNew(() =>
-                        ExchangeTokenAsync(hotWallet, coldWallet, token.Mint, _options.Value.USDCmint, token.Amount), TaskCreationOptions.AttachedToParent);
+                        //_ = Task.Factory.StartNew(() =>
+                        await ExchangeTokenAsync(hotWallet, coldWallet, token.Mint, _options.Value.USDCmint, 0.000001);//token.AmountDouble);
+                                                                                                                       //, TaskCreationOptions.AttachedToParent);
                     }
                 }
             }
@@ -153,21 +146,22 @@ namespace mm_bot.Services
             var hotWallet = await _walletService.GetHotWalletAsync();
             var coldWallets = await _walletService.GetColdWalletsAsync();
 
-            //var outer = Task.Factory.StartNew(() =>
-            //{
-            foreach (var coldWallet in coldWallets)
+            var outer = Task.Factory.StartNew(() =>
             {
-                if (coldWallet.Tokens.Where(t => t.Mint == USDCmint).FirstOrDefault() != null
-                && coldWallet.Tokens.Where(t => t.Mint == USDCmint).FirstOrDefault().AmountDouble != 0.0)
+                foreach (var coldWallet in coldWallets)
                 {
-                    //_ = Task.Factory.StartNew(() =>
-                    await TransferTokenAsync(coldWallet, hotWallet, USDCmint,
-                        "1");//coldWallet.Tokens.Where(t => t.Mint == USDCmint).First().Amount);//, TaskCreationOptions.AttachedToParent);
+                    if (coldWallet.Tokens.Where(t => t.Mint == USDCmint).FirstOrDefault() != null
+                    && coldWallet.Tokens.Where(t => t.Mint == USDCmint).FirstOrDefault().AmountDouble != 0.0)
+                    {
+                        _ = Task.Factory.StartNew(() =>
+                         TransferTokenAsync(coldWallet, hotWallet, USDCmint,
+                            coldWallet.Tokens.Where(t => t.Mint == USDCmint).First().AmountDouble)
+                         , TaskCreationOptions.AttachedToParent);
+                    }
                 }
-            }
-            //});
+            });
 
-            //outer.Wait();
+            outer.Wait();
         }
 
         public async Task TransferAllSOLToHotWalletAsync()
@@ -175,41 +169,46 @@ namespace mm_bot.Services
             var hotWallet = await _walletService.GetHotWalletAsync();
             var coldWallets = await _walletService.GetColdWalletsAsync();
 
-            //var outer = Task.Factory.StartNew(() =>
-            //{
-            foreach (var coldWallet in coldWallets)
+            var outer = Task.Factory.StartNew(() =>
             {
-                if (coldWallet.SOL != 0)
+                foreach (var coldWallet in coldWallets)
                 {
-                    //_ = Task.Factory.StartNew(() =>
-                    await TransferSolAsync(coldWallet, hotWallet, coldWallet.Lamports, coldWallet.SOL);//, TaskCreationOptions.AttachedToParent);
+                    if (coldWallet.SOL != 0)
+                    {
+                        _ = Task.Factory.StartNew(() =>
+                        TransferSolAsync(coldWallet, hotWallet, coldWallet.Lamports, coldWallet.SOL)
+                        , TaskCreationOptions.AttachedToParent);
+                    }
                 }
-            }
-            //});
+            });
 
-            //outer.Wait();
+            outer.Wait();
         }
 
-        public async Task<mmTransactionModel> GetInfoAboutTransactionAsync(string txid)
+        public async Task<mmTransactionModel> GetInfoAboutTransactionAsync(string txid, string operationType)
         {
             TransactionInfoResponseModel transactionInfo = await _cryptoService.GetInfoAboutTransactionAsync(txid);
             mmTransactionModel transaction;
             try
             {
                 transaction = new mmTransactionModel();
-                transaction.Status = transactionInfo.result.meta.status.Err == null ? "Ok" : "Error";
-                transaction.Date = DateTime.UtcNow;
-                transaction.WalletAddress = transactionInfo.result.transaction.feePayer;
-                transaction.SendTokenMint = transactionInfo.result.meta.preTokenBalances
-                 .First().mint;
-                transaction.SendTokenCount = (double)(transactionInfo.result.meta.preTokenBalances
-                 .First().uiTokenAmount.uiAmount.GetValueOrDefault(0) - transactionInfo.result.meta.postTokenBalances.First().uiTokenAmount.uiAmount.GetValueOrDefault(0));
-                transaction.RecieveTokenMint = transactionInfo.result.meta.postTokenBalances
-                .Last().mint;
-                transaction.RecieveTokenCount = (double)(transactionInfo.result.meta.postTokenBalances
-                .Last().uiTokenAmount.uiAmount.GetValueOrDefault(0) - transactionInfo.result.meta.preTokenBalances.Last().uiTokenAmount.uiAmount.GetValueOrDefault(0));
-                transaction.BalanceXToken = (double)transactionInfo.result.meta.postBalances.First() / 1000000000;
 
+                if (operationType.Equals("Exchange"))
+                {
+
+                    if (transactionInfo.result.meta.preTokenBalances != null)
+                    {
+                        transaction.RecieveTokenCount = (double)(transactionInfo.result.meta.postBalances.FirstOrDefault() - transactionInfo.result.meta.preBalances.FirstOrDefault()) / 1000000000;
+                    }
+                    else
+                    {
+                        transaction.RecieveTokenCount = (double)(transactionInfo.result.meta.postTokenBalances
+                                                        .Last().uiTokenAmount.uiAmount.GetValueOrDefault(0) - transactionInfo.result.meta.preTokenBalances.Last().uiTokenAmount.uiAmount.GetValueOrDefault(0));
+                    }
+                }
+
+                transaction.Status = transactionInfo.result.meta.status.Err == null ? "Ok" : "Error";
+                transaction.BalanceXToken = (double)transactionInfo.result.meta.postBalances.First() / 1000000000;
             }
             catch (Exception ex)
             {
@@ -219,27 +218,86 @@ namespace mm_bot.Services
             return transaction;
         }
 
-        public async Task<mmTransactionModel> CreateTransactionAsync(string txid, string operationType)
+        public async Task<mmTransactionModel> CreateTransactionAsync(string txid, string operationType, 
+            WalletModel sendWallet, WalletModel recieveWallet, string sendTokenMint, string recieveTokenMint, double sendAmount)
         {
-            var tx = await GetInfoAboutTransactionAsync(txid);
-
-            if (tx != null)
+            var transaction = new mmTransactionModel()
             {
-                tx.txId = txid;
+                txId = txid,
+                Date = DateTime.Now,
+                OperationType = operationType,
+                SendWalletAddress = sendWallet.PublicKey,
+                SendTokenMint = sendTokenMint,
+                SendTokenCount = sendAmount
+            };
 
-                if (tx.Status.Equals("Ok"))
-                {
-                    //Update USDC Token Balance
-                    var tokens = await _walletService.GetWalletTokensAsync(tx.WalletAddress);
-                    tx.BalanceUSDCToken = tokens.Where(t => t.Mint.Equals(_options.Value.USDCmint)).Select(t => t.AmountDouble).FirstOrDefault();
-                }
-
-                tx.OperationType = operationType;
-
-                await AddTransactionAsync(tx);
+            if (operationType.Equals("Transfer"))
+            {
+                transaction.RecieveWalletAddress = recieveWallet.PublicKey;
+                transaction.RecieveTokenMint = sendTokenMint;
+                transaction.RecieveTokenCount = sendAmount;
+            }
+            else
+            if (operationType.Equals("Exchange"))
+            {
+                transaction.RecieveWalletAddress = sendWallet.PublicKey;
+                transaction.RecieveTokenMint = recieveTokenMint;
             }
 
-            return tx;
+            var tranInfo = await GetInfoAboutTransactionAsync(txid, operationType);
+
+            if (tranInfo != null)
+            {
+                if (tranInfo.Status.Equals("Ok"))
+                {
+                    transaction.Status = "Ok";
+                    var tokens = await _walletService.GetWalletTokensAsync(tranInfo.SendWalletAddress);
+                    transaction.BalanceUSDCToken = tokens.Where(t => t.Mint.Equals(_options.Value.USDCmint)).Select(t => t.AmountDouble).FirstOrDefault();
+                    transaction.RecieveTokenCount = tranInfo.RecieveTokenCount;
+                    transaction.BalanceXToken = tranInfo.RecieveTokenCount;
+                }
+                else
+                {
+                    transaction.Status = "Error";
+                }
+
+                await AddTransactionAsync(transaction);
+            }
+
+            return transaction;
+        }
+
+        public async Task<double> GetDailyTradingVolumeInUSDCperXtokenAsync()
+        {
+            var todayTran = await GetTodayTransactionsAsync();
+            double dailyTradingVolumeInUSDCperXtoken;
+            double dailyTradingVolumeInUSDCperXtokenSend = todayTran
+                                                       .Where(t => t.SendTokenMint == _options.Value.USDCmint
+                                                                    && t.OperationType == "Exchange"
+                                                                    && t.Status == "Ok")
+                                                       .Sum(p => p.SendTokenCount);
+            double dailyTradingVolumeInUSDCperXtokenRecieve = todayTran
+                                                                .Where(t => t.RecieveTokenMint == _options.Value.USDCmint
+                                                                            && t.OperationType == "Exchange"
+                                                                            && t.Status == "Ok")
+                                                                .Sum(p => p.RecieveTokenCount);
+            dailyTradingVolumeInUSDCperXtoken = dailyTradingVolumeInUSDCperXtokenSend + dailyTradingVolumeInUSDCperXtokenRecieve;
+
+            return dailyTradingVolumeInUSDCperXtoken;
+        }
+
+        public async Task<bool> AllowedWalletExchange(WalletModel wallet, int delay)
+        {
+            var todayTran = await GetTodayTransactionsAsync();
+            return todayTran.Where(t => t.SendWalletAddress == wallet.PublicKey
+                                 && t.OperationType == "Exchange"
+                                 && t.Date > DateTime.Now.AddSeconds(-delay)).Any();
+
+        }
+
+        public async Task<List<mmTransactionModel>> GetTodayTransactionsAsync()
+        {
+            return _mapper.Map<List<mmTransactionModel>>(await _mmTransactionRepository.GetTodayTransactionsAsync());
         }
     }
 }

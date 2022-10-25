@@ -14,7 +14,7 @@ namespace mm_bot.Services.Interfaces
         public Task<JObject> GetInfoAboutWalletAsync(string privateKey);
         public Task<List<WalletTokenResponseModel>> GetWalletTokensAsync(string publicKey);
         public Task<string> TransferSolToAnotherWalletAsync(string privateKey, string toPublicKey, double sol);
-        public Task<string> TransferTokenToAnotherWalletAsync(string privateKey, string mint, string toPublicKey, string count);
+        public Task<string> TransferTokenToAnotherWalletAsync(string privateKey, string mint, string toPublicKey, double count);
         public Task<TransactionInfoResponseModel> GetInfoAboutTransactionAsync(string txid);
         public Task<string> SignTransactionAsync(string privateKey, string txid);
     }

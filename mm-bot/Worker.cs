@@ -10,7 +10,7 @@ namespace mm_bot
         private readonly IWalletService _walletService;
         private readonly IOptions<ConfigSettings> _options;
         private readonly ICommandService  _commandService;
-        private readonly ITransactionService _transactionService;
+        private readonly IExchangeService _exchangeService;
 
         CancellationTokenSource cancellationTokenSourceTransactions = new CancellationTokenSource();
 
@@ -18,13 +18,13 @@ namespace mm_bot
                       IWalletService walletService,
                       IOptions<ConfigSettings> options,
                       ICommandService commandService,
-                      ITransactionService transactionService)
+                      IExchangeService exchangeService)
         {
             _logger = logger;
             _walletService = walletService;
             _options = options;
             _commandService = commandService;
-            _transactionService = transactionService;
+            _exchangeService = exchangeService;
         }
 
         public override async Task StartAsync(CancellationToken cancellationToken)
@@ -51,8 +51,8 @@ namespace mm_bot
             //Listen input commands
             _ = Task.Run(() => ListenForInput(cancellationTokenSourceTransactions));
 
-            //Start exchange transactions
-            _ = Task.Run(() => _transactionService.StartTransationsAsync(cancellationTokenSourceTransactions.Token));
+            //Monitoring Sol balance on Hot Wallet
+            _ = Task.Run(() => _walletService.MonitoringSolBalanceAsync(cancellationTokenSourceTransactions, cancellationToken));
 
             await base.StartAsync(cancellationToken);
         }
@@ -61,16 +61,8 @@ namespace mm_bot
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                //if (button.Content == "Start")
-                //{
-                //    button.Content = "Stop";
-                //    DoWork(cts.Token);
-                //}
-                //else
-                //{
-                //    button.Content = "Start";
-                //    cts.Cancel();
-                //}
+                //Start exchange transactions
+                _ = Task.Run(() => _exchangeService.StartExchangeAsync(cancellationTokenSourceTransactions));
 
                 _logger.LogInformation("Worker in time {time}", DateTime.Now);
                 await Task.Delay(3000, stoppingToken);

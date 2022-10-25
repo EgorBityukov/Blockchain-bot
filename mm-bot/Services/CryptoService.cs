@@ -97,7 +97,7 @@ namespace mm_bot.Services
             {
                 int k = 0;
 
-                while (response.StatusCode == System.Net.HttpStatusCode.OK || k == 4)
+                while (response.StatusCode != System.Net.HttpStatusCode.OK || k == 4)
                 {
                     await Task.Delay(4000);
                     k++;
@@ -108,7 +108,7 @@ namespace mm_bot.Services
             {
                 int k = 0;
 
-                while (response.StatusCode == System.Net.HttpStatusCode.OK || k == 3)
+                while (response.StatusCode != System.Net.HttpStatusCode.OK || k == 3)
                 {
                     await Task.Delay(120000);
                     k++;
@@ -134,14 +134,14 @@ namespace mm_bot.Services
             }
         }
 
-        public async Task<string> TransferTokenToAnotherWalletAsync(string privateKey, string mint, string toPublicKey, string count)
+        public async Task<string> TransferTokenToAnotherWalletAsync(string privateKey, string mint, string toPublicKey, double count)
         {
             _httpClient.DefaultRequestHeaders.Add("x-auth-token", privateKey);
 
             var parameters = new Dictionary<string, string>()
             {
                 ["to"] = toPublicKey,
-                ["count"] = count,
+                ["count"] = count.ToString(),
                 ["isForbiddenToCloseAccount"] = "true"
             };
 
@@ -153,7 +153,7 @@ namespace mm_bot.Services
             {
                 int k = 0;
 
-                while (response.StatusCode == System.Net.HttpStatusCode.OK || k == 4)
+                while (response.StatusCode != System.Net.HttpStatusCode.OK || k == 4)
                 {
                     await Task.Delay(4000);
                     k++;
@@ -164,7 +164,7 @@ namespace mm_bot.Services
             {
                 int k = 0;
 
-                while (response.StatusCode == System.Net.HttpStatusCode.OK || k == 3)
+                while (response.StatusCode != System.Net.HttpStatusCode.OK || k == 3)
                 {
                     await Task.Delay(120000);
                     k++;
@@ -200,7 +200,7 @@ namespace mm_bot.Services
             {
                 int k = 0;
 
-                while (response.StatusCode == System.Net.HttpStatusCode.OK || k == 4)
+                while (response.StatusCode != System.Net.HttpStatusCode.OK || k == 4)
                 {
                     await Task.Delay(4000);
                     k++;
@@ -211,7 +211,7 @@ namespace mm_bot.Services
             {
                 int k = 0;
 
-                while (response.StatusCode == System.Net.HttpStatusCode.OK || k == 3)
+                while (response.StatusCode != System.Net.HttpStatusCode.OK || k == 3)
                 {
                     await Task.Delay(120000);
                     k++;
@@ -238,6 +238,7 @@ namespace mm_bot.Services
 
         public async Task<string> SignTransactionAsync(string privateKey, string txid)
         {
+            string requestUrl = "transactions/sign";
             _httpClient.DefaultRequestHeaders.Add("x-auth-token", privateKey);
 
             var parameters = new Dictionary<string, string>()
@@ -247,7 +248,31 @@ namespace mm_bot.Services
 
             var encodedContent = new FormUrlEncodedContent(parameters);
 
-            HttpResponseMessage response = await _httpClient.PostAsync("transactions/sign", encodedContent);
+            HttpResponseMessage response = await _httpClient.PostAsync(requestUrl, encodedContent);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
+            {
+                int k = 0;
+
+                while (response.StatusCode != System.Net.HttpStatusCode.OK || k == 4)
+                {
+                    await Task.Delay(4000);
+                    k++;
+                    response = await _httpClient.PostAsync(requestUrl, encodedContent);
+                }
+            }
+            else if (response.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                int k = 0;
+
+                while (response.StatusCode != System.Net.HttpStatusCode.OK || k == 3)
+                {
+                    await Task.Delay(120000);
+                    k++;
+                    response = await _httpClient.PostAsync(requestUrl, encodedContent);
+                }
+            }
+
             string responseBody = await response.Content.ReadAsStringAsync();
 
             _httpClient.DefaultRequestHeaders.Remove("x-auth-token");
@@ -257,7 +282,7 @@ namespace mm_bot.Services
             if (txidResponce.Value<string>("status").Equals("error"))
             {
                 _logger.LogError("CryptoService - Sign Transaction Http Request Exception: {0}", txidResponce.GetValue("error"));
-                return txidResponce.GetValue("txid").ToString();
+                return null;
             }
             else
             {

@@ -52,6 +52,7 @@ IHost host = Host.CreateDefaultBuilder(args)
         services.AddTransient<ICryptoService, CryptoService>();
         services.AddTransient<IJupService, JupService>();
         services.AddTransient<ICleanUpService, CleanUpService>();
+        services.AddTransient<IExchangeService, ExchangeService>();
         
 
         services.Configure<ConfigSettings>(config.GetSection("Settings"));

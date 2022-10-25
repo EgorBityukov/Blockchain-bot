@@ -23,10 +23,10 @@
         "PrivateKey": "/FvOwNFF8xi/9zEpVeqcIV/HPKUnCaeLsfDFQ81nQtYvhvKHnqBrQ5AwnoFkbltt0ePJi5rkcUbL1gGOTjh6ef3hDaIbLFXEOupHW/R/SOhTg9rm1UMnmdMJx6l9ktSI5a5XjkdTgw=="
       }
     ],
-    "ColdStorageBaseVolumeUSDC": 0.0,
-    "ColdStorageBaseVolumeSOL": 0.0,
     "MainExchangeToken": "Token_Address",
-    "DailyTradingVolumeUSDC": 1.0,
+    "DailyTradingVolumeSolperColdWallet": 10.0,
+    "DailyTradingVolumeUSDCperColdWallet": 20.0,
+    "DailyTradingVolumeInUSDCperXtoken": 20,
     "PercentageOfRandomTransactionsForAddToken": 0.05,
     "MinimumDelayInSecondsForOneTransactionPerWallet": 180,
     "AutomaticGenerationOfWallets": false,
