@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Options;
 using mm_bot.Models;
-using mm_bot.Models.ResponseModel;
+using mm_bot.Models.ResponseModels;
 using mm_bot.Services.Interfaces;
 using mmTransactionDB.Models;
 using mmTransactionDB.Repository.Interfaces;
@@ -61,17 +61,29 @@ namespace mm_bot.Services
                 if (swapTransactons.setupTransaction != null)
                 {
                     transactionId = await _cryptoService.SignTransactionAsync(wallet.PrivateKey, swapTransactons.setupTransaction);
-                    await CreateTransactionAsync(transactionId, "Setup", wallet, wallet, inputMint, outputMint, amount);
+
+                    if (transactionId != null)
+                    {
+                        await CreateTransactionAsync(transactionId, "Setup", wallet, wallet, inputMint, outputMint, amount);
+                    }
                 }
                 if (swapTransactons.swapTransaction != null)
                 {
                     transactionId = await _cryptoService.SignTransactionAsync(wallet.PrivateKey, swapTransactons.swapTransaction);
-                    swapTransaction = await CreateTransactionAsync(transactionId, "Exchange", wallet, wallet, inputMint, outputMint, amount);
+
+                    if (transactionId != null)
+                    {
+                        swapTransaction = await CreateTransactionAsync(transactionId, "Exchange", wallet, wallet, inputMint, outputMint, amount);
+                    }
                 }
                 if (swapTransactons.cleanupTransaction != null)
                 {
                     transactionId = await _cryptoService.SignTransactionAsync(wallet.PrivateKey, swapTransactons.cleanupTransaction);
-                    await CreateTransactionAsync(transactionId, "CleanUp", wallet, wallet, inputMint, outputMint, amount);
+
+                    if (transactionId != null)
+                    {
+                        await CreateTransactionAsync(transactionId, "CleanUp", wallet, wallet, inputMint, outputMint, amount);
+                    }
                 }
 
                 if (swapTransaction != null)
@@ -107,7 +119,7 @@ namespace mm_bot.Services
                     if (!fromWallet.HotWallet && !toWallet.HotWallet)
                     {
                         await _walletService.UpdateHotWalletAsync(false);
-                    }                
+                    }
                 }
             }
         }
@@ -155,7 +167,7 @@ namespace mm_bot.Services
                     {
                         //_ = Task.Factory.StartNew(() =>
                         await ExchangeTokenAsync(hotWallet, coldWallet, token.Mint, _options.Value.USDCmint, 0.01m);//token.AmountDouble);
-                                                                                                                       //, TaskCreationOptions.AttachedToParent);
+                                                                                                                    //, TaskCreationOptions.AttachedToParent);
                     }
                 }
             }
@@ -222,7 +234,7 @@ namespace mm_bot.Services
 
                     if (transactionInfo.result.meta.preTokenBalances != null)
                     {
-                        if(transactionInfo.result.meta.preTokenBalances.Where(b => b.owner == publicKey && b.mint == recieveMint).Any())
+                        if (transactionInfo.result.meta.preTokenBalances.Where(b => b.owner == publicKey && b.mint == recieveMint).Any())
                         {
                             transaction.RecieveTokenCount = transactionInfo.result.meta.postTokenBalances
                                                         .Where(b => b.owner == publicKey && b.mint == recieveMint).FirstOrDefault()
@@ -240,7 +252,7 @@ namespace mm_bot.Services
                     else
                     {
                         transaction.RecieveTokenCount = (decimal)(transactionInfo.result.meta.postBalances.FirstOrDefault()
-                                                                - transactionInfo.result.meta.preBalances.FirstOrDefault()) 
+                                                                - transactionInfo.result.meta.preBalances.FirstOrDefault())
                                                                 / 1000000000;
                     }
                 }
@@ -256,7 +268,7 @@ namespace mm_bot.Services
             return transaction;
         }
 
-        public async Task<mmTransactionModel> CreateTransactionAsync(string txid, string operationType, 
+        public async Task<mmTransactionModel> CreateTransactionAsync(string txid, string operationType,
             WalletModel sendWallet, WalletModel recieveWallet, string sendTokenMint, string recieveTokenMint, decimal sendAmount)
         {
             var transaction = new mmTransactionModel()

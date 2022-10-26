@@ -1,4 +1,4 @@
-﻿using mm_bot.Models.ResponseModel;
+﻿using mm_bot.Models.ResponseModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;

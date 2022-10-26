@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace mm_bot.Models.ResponseModel
+namespace mm_bot.Models.ResponseModels
 {
     public class TransactionInfoResponseModel
     {

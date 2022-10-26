@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.WebUtilities;
-using mm_bot.Models.ResponseModel;
+using mm_bot.Models.ResponseModels;
 using mm_bot.Services.Interfaces;
 using Newtonsoft.Json.Linq;
 using System.Net.Http.Headers;

@@ -26,7 +26,7 @@ namespace mm_bot.Services
                 return cancellationTokenSourceTransactions;
             }
 
-            return null;
+            return cancellationTokenSourceTransactions;
         }
     }
 }
