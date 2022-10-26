@@ -14,10 +14,10 @@ namespace mm_bot.Services.Interfaces
         public Task TransferAllSOLToHotWalletAsync();
         public Task<mmTransactionModel> GetInfoAboutTransactionAsync(string txid, string operationType);
         public Task AddTransactionAsync(mmTransactionModel transaction);
-        public Task ExchangeTokenAsync(WalletModel hotWalletFeePayer, WalletModel coldWallet, string inputMint, string outputMint, double amount);
-        public Task TransferSolAsync(WalletModel fromWallet, WalletModel toWallet, long lamports, double sol);
-        public Task TransferTokenAsync(WalletModel fromWallet, WalletModel toWallet, string mint, double count);
-        public Task<double> GetDailyTradingVolumeInUSDCperXtokenAsync();
+        public Task ExchangeTokenAsync(WalletModel hotWalletFeePayer, WalletModel coldWallet, string inputMint, string outputMint, decimal amount);
+        public Task TransferSolAsync(WalletModel fromWallet, WalletModel toWallet, long lamports, decimal sol);
+        public Task TransferTokenAsync(WalletModel fromWallet, WalletModel toWallet, string mint, decimal count);
+        public Task<decimal> GetDailyTradingVolumeInUSDCperXtokenAsync();
         public Task<bool> AllowedWalletExchange(WalletModel wallet, int delay);
         public Task<List<mmTransactionModel>> GetTodayTransactionsAsync();
     }

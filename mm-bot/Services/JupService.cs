@@ -24,7 +24,7 @@ namespace mm_bot.Services
             _logger = logger;
         }
 
-        public async Task<JupQuoteResponseModel> GetQuoteAsync(string inputMint, string outputMint, double amount)
+        public async Task<JupQuoteResponseModel> GetQuoteAsync(string inputMint, string outputMint, decimal amount)
         {
             var parameters = new Dictionary<string, string>()
             {

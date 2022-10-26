@@ -62,7 +62,7 @@ namespace mm_bot
             while (!stoppingToken.IsCancellationRequested)
             {
                 //Start exchange transactions
-                _ = Task.Run(() => _exchangeService.StartExchangeAsync(cancellationTokenSourceTransactions));
+                //_ = Task.Run(() => _exchangeService.StartExchangeAsync(cancellationTokenSourceTransactions));
 
                 _logger.LogInformation("Worker in time {time}", DateTime.Now);
                 await Task.Delay(3000, stoppingToken);

@@ -11,8 +11,8 @@ namespace mm_bot.Models
         public string PublicKey { get; set; }
         public string PrivateKey { get; set; }
         public long Lamports { get; set; }
-        public double SOL { get; set; }
-        public double ApproximateMintPrice { get; set; }
+        public decimal SOL { get; set; }
+        public decimal ApproximateMintPrice { get; set; }
         public List<TokenModel> Tokens { get; set; }
         public bool HotWallet { get; set; }
     }

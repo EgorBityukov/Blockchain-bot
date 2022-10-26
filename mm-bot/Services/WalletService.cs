@@ -33,7 +33,7 @@ namespace mm_bot.Services
                 var hotWallet = await GetHotWalletAsync();
                 await UpdateWalletInfoWithoutTokensAsync(hotWallet);
 
-                if (hotWallet.SOL < 0.1)
+                if (hotWallet.SOL < 0.1m)
                 {
                     cancellationTokenSourceTransactions.Cancel();
                 }
@@ -106,8 +106,8 @@ namespace mm_bot.Services
 
             walletInfo.PrivateKey = privateKey;
             walletInfo.Lamports = walletInfoJson.Value<long>("lamports");
-            walletInfo.SOL = walletInfoJson.Value<double>("sol");
-            walletInfo.ApproximateMintPrice = walletInfoJson.Value<double>("approximate_mint_price");
+            walletInfo.SOL = walletInfoJson.Value<decimal>("sol");
+            walletInfo.ApproximateMintPrice = walletInfoJson.Value<decimal>("approximate_mint_price");
             walletInfo.PublicKey = walletInfoJson.Value<string>("public_key");
 
             return walletInfo;

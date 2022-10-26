@@ -40,7 +40,7 @@ namespace mm_bot.Services
             _mapper = mapper;
         }
 
-        public async Task ExchangeTokenAsync(WalletModel hotWalletFeePayer, WalletModel coldWallet, string inputMint, string outputMint, double amount)
+        public async Task ExchangeTokenAsync(WalletModel hotWalletFeePayer, WalletModel coldWallet, string inputMint, string outputMint, decimal amount)
         {
             var quotes = await _jupService.GetQuoteAsync(inputMint, outputMint, amount);
 
@@ -75,7 +75,7 @@ namespace mm_bot.Services
             }
         }
 
-        public async Task TransferSolAsync(WalletModel fromWallet, WalletModel toWallet, long lamports, double sol)
+        public async Task TransferSolAsync(WalletModel fromWallet, WalletModel toWallet, long lamports, decimal sol)
         {
             string txid;
 
@@ -93,7 +93,7 @@ namespace mm_bot.Services
             }
         }
 
-        public async Task TransferTokenAsync(WalletModel fromWallet, WalletModel toWallet, string mint, double count)
+        public async Task TransferTokenAsync(WalletModel fromWallet, WalletModel toWallet, string mint, decimal count)
         {
             string txid;
 
@@ -127,10 +127,10 @@ namespace mm_bot.Services
             {
                 foreach (var token in coldWallet.Tokens)
                 {
-                    if (!token.Mint.Equals(_options.Value.USDCmint) && token.AmountDouble != 0.0)
+                    if (!token.Mint.Equals(_options.Value.USDCmint) && token.AmountDouble != 0.0m)
                     {
                         //_ = Task.Factory.StartNew(() =>
-                        await ExchangeTokenAsync(hotWallet, coldWallet, token.Mint, _options.Value.USDCmint, 0.000001);//token.AmountDouble);
+                        await ExchangeTokenAsync(hotWallet, coldWallet, token.Mint, _options.Value.USDCmint, 0.000001m);//token.AmountDouble);
                                                                                                                        //, TaskCreationOptions.AttachedToParent);
                     }
                 }
@@ -151,7 +151,7 @@ namespace mm_bot.Services
                 foreach (var coldWallet in coldWallets)
                 {
                     if (coldWallet.Tokens.Where(t => t.Mint == USDCmint).FirstOrDefault() != null
-                    && coldWallet.Tokens.Where(t => t.Mint == USDCmint).FirstOrDefault().AmountDouble != 0.0)
+                    && coldWallet.Tokens.Where(t => t.Mint == USDCmint).FirstOrDefault().AmountDouble != 0.0m)
                     {
                         _ = Task.Factory.StartNew(() =>
                          TransferTokenAsync(coldWallet, hotWallet, USDCmint,
@@ -198,17 +198,17 @@ namespace mm_bot.Services
 
                     if (transactionInfo.result.meta.preTokenBalances != null)
                     {
-                        transaction.RecieveTokenCount = (double)(transactionInfo.result.meta.postBalances.FirstOrDefault() - transactionInfo.result.meta.preBalances.FirstOrDefault()) / 1000000000;
+                        transaction.RecieveTokenCount = (decimal)(transactionInfo.result.meta.postBalances.FirstOrDefault() - transactionInfo.result.meta.preBalances.FirstOrDefault()) / 1000000000;
                     }
                     else
                     {
-                        transaction.RecieveTokenCount = (double)(transactionInfo.result.meta.postTokenBalances
+                        transaction.RecieveTokenCount = (decimal)(transactionInfo.result.meta.postTokenBalances
                                                         .Last().uiTokenAmount.uiAmount.GetValueOrDefault(0) - transactionInfo.result.meta.preTokenBalances.Last().uiTokenAmount.uiAmount.GetValueOrDefault(0));
                     }
                 }
 
                 transaction.Status = transactionInfo.result.meta.status.Err == null ? "Ok" : "Error";
-                transaction.BalanceXToken = (double)transactionInfo.result.meta.postBalances.First() / 1000000000;
+                transaction.BalanceXToken = (decimal)transactionInfo.result.meta.postBalances.First() / 1000000000;
             }
             catch (Exception ex)
             {
@@ -219,7 +219,7 @@ namespace mm_bot.Services
         }
 
         public async Task<mmTransactionModel> CreateTransactionAsync(string txid, string operationType, 
-            WalletModel sendWallet, WalletModel recieveWallet, string sendTokenMint, string recieveTokenMint, double sendAmount)
+            WalletModel sendWallet, WalletModel recieveWallet, string sendTokenMint, string recieveTokenMint, decimal sendAmount)
         {
             var transaction = new mmTransactionModel()
             {
@@ -267,16 +267,16 @@ namespace mm_bot.Services
             return transaction;
         }
 
-        public async Task<double> GetDailyTradingVolumeInUSDCperXtokenAsync()
+        public async Task<decimal> GetDailyTradingVolumeInUSDCperXtokenAsync()
         {
             var todayTran = await GetTodayTransactionsAsync();
-            double dailyTradingVolumeInUSDCperXtoken;
-            double dailyTradingVolumeInUSDCperXtokenSend = todayTran
+            decimal dailyTradingVolumeInUSDCperXtoken;
+            decimal dailyTradingVolumeInUSDCperXtokenSend = todayTran
                                                        .Where(t => t.SendTokenMint == _options.Value.USDCmint
                                                                     && t.OperationType == "Exchange"
                                                                     && t.Status == "Ok")
                                                        .Sum(p => p.SendTokenCount);
-            double dailyTradingVolumeInUSDCperXtokenRecieve = todayTran
+            decimal dailyTradingVolumeInUSDCperXtokenRecieve = todayTran
                                                                 .Where(t => t.RecieveTokenMint == _options.Value.USDCmint
                                                                             && t.OperationType == "Exchange"
                                                                             && t.Status == "Ok")

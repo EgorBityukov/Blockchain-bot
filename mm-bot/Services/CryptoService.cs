@@ -79,7 +79,7 @@ namespace mm_bot.Services
             }
         }
 
-        public async Task<string> TransferSolToAnotherWalletAsync(string privateKey, string toPublicKey, double sol)
+        public async Task<string> TransferSolToAnotherWalletAsync(string privateKey, string toPublicKey, decimal sol)
         {
             _httpClient.DefaultRequestHeaders.Add("x-auth-token", privateKey);
 
@@ -134,7 +134,7 @@ namespace mm_bot.Services
             }
         }
 
-        public async Task<string> TransferTokenToAnotherWalletAsync(string privateKey, string mint, string toPublicKey, double count)
+        public async Task<string> TransferTokenToAnotherWalletAsync(string privateKey, string mint, string toPublicKey, decimal count)
         {
             _httpClient.DefaultRequestHeaders.Add("x-auth-token", privateKey);
 

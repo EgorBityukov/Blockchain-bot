@@ -9,7 +9,7 @@ namespace mm_bot.Services.Interfaces
 {
     public interface IJupService
     {
-        public Task<JupQuoteResponseModel> GetQuoteAsync(string inputMint, string outputMint, double amount);
+        public Task<JupQuoteResponseModel> GetQuoteAsync(string inputMint, string outputMint, decimal amount);
         public Task<SwapTransactionsResponseModel> GetSwapTransactionsAsync(JupSwapRequestModel requestContent);
     }
 }

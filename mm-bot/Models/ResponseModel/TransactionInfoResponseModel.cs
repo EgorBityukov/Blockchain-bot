@@ -113,7 +113,7 @@ namespace mm_bot.Models.ResponseModel
     {
         public string amount { get; set; }
         public int decimals { get; set; }
-        public double? uiAmount { get; set; }
+        public decimal? uiAmount { get; set; }
         public string uiAmountString { get; set; }
     }
 }

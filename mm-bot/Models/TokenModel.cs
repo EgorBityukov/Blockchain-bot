@@ -16,10 +16,10 @@ namespace mm_bot.Models
             get { return amount; }
             set {
                 amount = value;
-                AmountDouble = Convert.ToDouble(value) / 1000000;
+                AmountDouble = Convert.ToDecimal(value) / 1000000;
             } 
         }
         private string amount;
-        public double AmountDouble { get; set; }
+        public decimal AmountDouble { get; set; }
     }
 }

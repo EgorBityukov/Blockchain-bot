@@ -13,6 +13,6 @@ namespace mmTransactionDB.Models
         public string OwnerId { get; set; }
         public Wallet Owner { get; set; }
         public string Amount { get; set; }
-        public double AmountDouble { get; set; }
+        public decimal AmountDouble { get; set; }
     }
 }
