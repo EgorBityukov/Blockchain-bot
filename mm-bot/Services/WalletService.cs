@@ -149,6 +149,20 @@ namespace mm_bot.Services
             await _walletRepository.UpdateWalletAsync(_mapper.Map<Wallet>(wallet));
         }
 
+        public async Task UpdateHotWalletAsync(bool updateTokens)
+        {
+            var hotWallet = await GetHotWalletAsync();
+
+            if (updateTokens)
+            {
+                await UpdateWalletInfoWithTokensAsync(hotWallet);
+            }
+            else
+            {
+                await UpdateWalletInfoWithoutTokensAsync(hotWallet);
+            }
+        }
+
         public async Task DeleteAllWalletsAsync()
         {
             await _walletRepository.DeleteAllWalletsAsync();

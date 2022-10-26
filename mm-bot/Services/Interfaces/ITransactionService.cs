@@ -12,7 +12,7 @@ namespace mm_bot.Services.Interfaces
         public Task ExchangeAllTokensOnUSDCAsync();
         public Task TransferAllUSDCToHotWalletAsync();
         public Task TransferAllSOLToHotWalletAsync();
-        public Task<mmTransactionModel> GetInfoAboutTransactionAsync(string txid, string operationType);
+        public Task<mmTransactionModel> GetInfoAboutTransactionAsync(string txid, string operationType, string publicKey, string recieveMint);
         public Task AddTransactionAsync(mmTransactionModel transaction);
         public Task ExchangeTokenAsync(WalletModel hotWalletFeePayer, WalletModel coldWallet, string inputMint, string outputMint, decimal amount);
         public Task TransferSolAsync(WalletModel fromWallet, WalletModel toWallet, long lamports, decimal sol);

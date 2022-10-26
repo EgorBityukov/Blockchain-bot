@@ -286,7 +286,7 @@ namespace mm_bot.Services
             }
             else
             {
-                return txidResponce.GetValue("txid").ToString();
+                return txidResponce.GetValue("data").Value<string>("txid");
             }
         }
     }

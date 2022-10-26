@@ -40,7 +40,7 @@ namespace mm_bot.Services
             _mapper = mapper;
         }
 
-        public async Task ExchangeTokenAsync(WalletModel hotWalletFeePayer, WalletModel coldWallet, string inputMint, string outputMint, decimal amount)
+        public async Task ExchangeTokenAsync(WalletModel hotWalletFeePayer, WalletModel wallet, string inputMint, string outputMint, decimal amount)
         {
             var quotes = await _jupService.GetQuoteAsync(inputMint, outputMint, amount);
 
@@ -50,27 +50,41 @@ namespace mm_bot.Services
             {
                 jupSwapRequestModel.route = quotes.data[0];
                 jupSwapRequestModel.feeAccount = hotWalletFeePayer.PublicKey;
-                jupSwapRequestModel.userPublicKey = coldWallet.PublicKey;
+                jupSwapRequestModel.userPublicKey = wallet.PublicKey;
                 jupSwapRequestModel.wrapUnwrapSOL = true;
 
                 var swapTransactons = await _jupService.GetSwapTransactionsAsync(jupSwapRequestModel);
 
                 string transactionId;
+                mmTransactionModel swapTransaction = null;
 
                 if (swapTransactons.setupTransaction != null)
                 {
-                    transactionId = await _cryptoService.SignTransactionAsync(coldWallet.PrivateKey, swapTransactons.setupTransaction);
-                    await CreateTransactionAsync(transactionId, "Setup", coldWallet, coldWallet, inputMint, outputMint, amount);
+                    transactionId = await _cryptoService.SignTransactionAsync(wallet.PrivateKey, swapTransactons.setupTransaction);
+                    await CreateTransactionAsync(transactionId, "Setup", wallet, wallet, inputMint, outputMint, amount);
                 }
                 if (swapTransactons.swapTransaction != null)
                 {
-                    transactionId = await _cryptoService.SignTransactionAsync(coldWallet.PrivateKey, swapTransactons.swapTransaction);
-                    await CreateTransactionAsync(transactionId, "Exchange", coldWallet, coldWallet, inputMint, outputMint, amount);
+                    transactionId = await _cryptoService.SignTransactionAsync(wallet.PrivateKey, swapTransactons.swapTransaction);
+                    swapTransaction = await CreateTransactionAsync(transactionId, "Exchange", wallet, wallet, inputMint, outputMint, amount);
                 }
                 if (swapTransactons.cleanupTransaction != null)
                 {
-                    transactionId = await _cryptoService.SignTransactionAsync(coldWallet.PrivateKey, swapTransactons.cleanupTransaction);
-                    await CreateTransactionAsync(transactionId, "CleanUp", coldWallet, coldWallet, inputMint, outputMint, amount);
+                    transactionId = await _cryptoService.SignTransactionAsync(wallet.PrivateKey, swapTransactons.cleanupTransaction);
+                    await CreateTransactionAsync(transactionId, "CleanUp", wallet, wallet, inputMint, outputMint, amount);
+                }
+
+                if (swapTransaction != null)
+                {
+                    if (swapTransaction.Status.Equals("Ok"))
+                    {
+                        await _walletService.UpdateWalletInfoWithTokensAsync(wallet);
+
+                        if (!wallet.HotWallet)
+                        {
+                            await _walletService.UpdateHotWalletAsync(false);
+                        }
+                    }
                 }
             }
         }
@@ -87,8 +101,13 @@ namespace mm_bot.Services
             {
                 if (transaction.Status.Equals("Ok"))
                 {
-                    await _walletService.UpdateWalletInfoWithTokensAsync(fromWallet);
-                    await _walletService.UpdateWalletInfoWithTokensAsync(toWallet);
+                    await _walletService.UpdateWalletInfoWithoutTokensAsync(fromWallet);
+                    await _walletService.UpdateWalletInfoWithoutTokensAsync(toWallet);
+
+                    if (!fromWallet.HotWallet && !toWallet.HotWallet)
+                    {
+                        await _walletService.UpdateHotWalletAsync(false);
+                    }                
                 }
             }
         }
@@ -107,6 +126,11 @@ namespace mm_bot.Services
                 {
                     await _walletService.UpdateWalletInfoWithTokensAsync(fromWallet);
                     await _walletService.UpdateWalletInfoWithTokensAsync(toWallet);
+
+                    if (!fromWallet.HotWallet && !toWallet.HotWallet)
+                    {
+                        await _walletService.UpdateHotWalletAsync(false);
+                    }
                 }
             }
         }
@@ -130,7 +154,7 @@ namespace mm_bot.Services
                     if (!token.Mint.Equals(_options.Value.USDCmint) && token.AmountDouble != 0.0m)
                     {
                         //_ = Task.Factory.StartNew(() =>
-                        await ExchangeTokenAsync(hotWallet, coldWallet, token.Mint, _options.Value.USDCmint, 0.000001m);//token.AmountDouble);
+                        await ExchangeTokenAsync(hotWallet, coldWallet, token.Mint, _options.Value.USDCmint, 0.01m);//token.AmountDouble);
                                                                                                                        //, TaskCreationOptions.AttachedToParent);
                     }
                 }
@@ -185,7 +209,7 @@ namespace mm_bot.Services
             outer.Wait();
         }
 
-        public async Task<mmTransactionModel> GetInfoAboutTransactionAsync(string txid, string operationType)
+        public async Task<mmTransactionModel> GetInfoAboutTransactionAsync(string txid, string operationType, string publicKey, string recieveMint)
         {
             TransactionInfoResponseModel transactionInfo = await _cryptoService.GetInfoAboutTransactionAsync(txid);
             mmTransactionModel transaction;
@@ -198,12 +222,26 @@ namespace mm_bot.Services
 
                     if (transactionInfo.result.meta.preTokenBalances != null)
                     {
-                        transaction.RecieveTokenCount = (decimal)(transactionInfo.result.meta.postBalances.FirstOrDefault() - transactionInfo.result.meta.preBalances.FirstOrDefault()) / 1000000000;
+                        if(transactionInfo.result.meta.preTokenBalances.Where(b => b.owner == publicKey && b.mint == recieveMint).Any())
+                        {
+                            transaction.RecieveTokenCount = transactionInfo.result.meta.postTokenBalances
+                                                        .Where(b => b.owner == publicKey && b.mint == recieveMint).FirstOrDefault()
+                                                        .uiTokenAmount.uiAmount.GetValueOrDefault(0) - transactionInfo.result.meta.preTokenBalances
+                                                        .Where(b => b.owner == publicKey && b.mint == recieveMint).FirstOrDefault()
+                                                        .uiTokenAmount.uiAmount.GetValueOrDefault(0);
+                        }
+                        else
+                        {
+                            transaction.RecieveTokenCount = transactionInfo.result.meta.postTokenBalances
+                                                        .Where(b => b.owner == publicKey && b.mint == recieveMint).FirstOrDefault()
+                                                        .uiTokenAmount.uiAmount.GetValueOrDefault(0);
+                        }
                     }
                     else
                     {
-                        transaction.RecieveTokenCount = (decimal)(transactionInfo.result.meta.postTokenBalances
-                                                        .Last().uiTokenAmount.uiAmount.GetValueOrDefault(0) - transactionInfo.result.meta.preTokenBalances.Last().uiTokenAmount.uiAmount.GetValueOrDefault(0));
+                        transaction.RecieveTokenCount = (decimal)(transactionInfo.result.meta.postBalances.FirstOrDefault()
+                                                                - transactionInfo.result.meta.preBalances.FirstOrDefault()) 
+                                                                / 1000000000;
                     }
                 }
 
@@ -224,7 +262,7 @@ namespace mm_bot.Services
             var transaction = new mmTransactionModel()
             {
                 txId = txid,
-                Date = DateTime.Now,
+                Date = DateTime.UtcNow,
                 OperationType = operationType,
                 SendWalletAddress = sendWallet.PublicKey,
                 SendTokenMint = sendTokenMint,
@@ -244,17 +282,17 @@ namespace mm_bot.Services
                 transaction.RecieveTokenMint = recieveTokenMint;
             }
 
-            var tranInfo = await GetInfoAboutTransactionAsync(txid, operationType);
+            var tranInfo = await GetInfoAboutTransactionAsync(txid, operationType, recieveWallet.PublicKey, recieveTokenMint);
 
             if (tranInfo != null)
             {
                 if (tranInfo.Status.Equals("Ok"))
                 {
                     transaction.Status = "Ok";
-                    var tokens = await _walletService.GetWalletTokensAsync(tranInfo.SendWalletAddress);
+                    var tokens = await _walletService.GetWalletTokensAsync(transaction.SendWalletAddress);
                     transaction.BalanceUSDCToken = tokens.Where(t => t.Mint.Equals(_options.Value.USDCmint)).Select(t => t.AmountDouble).FirstOrDefault();
                     transaction.RecieveTokenCount = tranInfo.RecieveTokenCount;
-                    transaction.BalanceXToken = tranInfo.RecieveTokenCount;
+                    transaction.BalanceXToken = tranInfo.BalanceXToken;
                 }
                 else
                 {
@@ -291,7 +329,7 @@ namespace mm_bot.Services
             var todayTran = await GetTodayTransactionsAsync();
             return todayTran.Where(t => t.SendWalletAddress == wallet.PublicKey
                                  && t.OperationType == "Exchange"
-                                 && t.Date > DateTime.Now.AddSeconds(-delay)).Any();
+                                 && t.Date > DateTime.UtcNow.AddSeconds(-delay)).Any();
 
         }
 

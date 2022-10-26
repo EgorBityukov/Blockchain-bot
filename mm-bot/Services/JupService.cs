@@ -30,7 +30,7 @@ namespace mm_bot.Services
             {
                 ["inputMint"] = inputMint,
                 ["outputMint"] = outputMint,
-                ["amount"] = amount.ToString()
+                ["amount"] = ((long)(amount * 1000000m)).ToString()
             };
 
             var requestUrl = QueryHelpers.AddQueryString("quote", parameters);
