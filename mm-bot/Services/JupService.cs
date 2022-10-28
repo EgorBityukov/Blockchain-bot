@@ -17,7 +17,7 @@ namespace mm_bot.Services
         private readonly HttpClient _httpClient;
 
         public JupService(IHttpClientFactory httpClientFactory,
-                             ILogger<Worker> logger)
+                          ILogger<Worker> logger)
         {
             _httpClientFactory = httpClientFactory;
             _httpClient = _httpClientFactory.CreateClient("JupClient");
@@ -74,6 +74,36 @@ namespace mm_bot.Services
             {
                 SwapTransactionsResponseModel swapTransactions = swapResponce.ToObject<SwapTransactionsResponseModel>();
                 return swapTransactions;
+            }
+        }
+
+        public async Task<List<string>> GetMintsAsync()
+        {
+            string requestUrl = "indexed-route-map";
+
+            var parameters = new Dictionary<string, string>()
+            {
+                ["onlyDirectRoutes"] = "true"
+            };
+
+            var encodedContent = new FormUrlEncodedContent(parameters);
+
+            HttpResponseMessage response = await _httpClient.PostAsync(requestUrl, encodedContent);
+
+            string responseBody = await response.Content.ReadAsStringAsync();
+
+            JObject mintsResponce = JObject.Parse(responseBody);
+
+            if (mintsResponce.Children().Contains("error"))
+            {
+                _logger.LogError("JupService - Get Quote Http Request Exception /n" +
+                    "Message: {1}", mintsResponce.GetValue("message"));
+                return null;
+            }
+            else
+            {
+                List<string> mints = mintsResponce.GetValue("mintKeys").ToObject<List<string>>();
+                return mints;
             }
         }
     }

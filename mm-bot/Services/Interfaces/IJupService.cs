@@ -11,5 +11,6 @@ namespace mm_bot.Services.Interfaces
     {
         public Task<JupQuoteResponseModel> GetQuoteAsync(string inputMint, string outputMint, decimal amount);
         public Task<SwapTransactionsResponseModel> GetSwapTransactionsAsync(JupSwapRequestModel requestContent);
+        public Task<List<string>> GetMintsAsync();
     }
 }

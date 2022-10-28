@@ -101,7 +101,7 @@ namespace mm_bot.Services
             }
         }
 
-        public async Task TransferSolAsync(WalletModel fromWallet, WalletModel toWallet, long lamports, decimal sol)
+        public async Task TransferSolAsync(WalletModel fromWallet, WalletModel toWallet, decimal sol)
         {
             string txid;
 
@@ -157,23 +157,23 @@ namespace mm_bot.Services
             var hotWallet = await _walletService.GetHotWalletAsync();
             var coldWallets = await _walletService.GetColdWalletsAsync();
 
-            //var outer = Task.Factory.StartNew(() =>
-            //{
-            foreach (var coldWallet in coldWallets)
+            var outer = Task.Factory.StartNew(() =>
             {
-                foreach (var token in coldWallet.Tokens)
+                foreach (var coldWallet in coldWallets)
                 {
-                    if (!token.Mint.Equals(_options.Value.USDCmint) && token.AmountDouble != 0.0m)
+                    foreach (var token in coldWallet.Tokens)
                     {
-                        //_ = Task.Factory.StartNew(() =>
-                        await ExchangeTokenAsync(hotWallet, coldWallet, token.Mint, _options.Value.USDCmint, 0.01m);//token.AmountDouble);
-                                                                                                                    //, TaskCreationOptions.AttachedToParent);
+                        if (!token.Mint.Equals(_options.Value.USDCmint) && token.AmountDouble != 0.0m)
+                        {
+                            _ = Task.Factory.StartNew(() =>
+                            ExchangeTokenAsync(hotWallet, coldWallet, token.Mint, _options.Value.USDCmint, token.AmountDouble)
+                            , TaskCreationOptions.AttachedToParent);
+                        }
                     }
                 }
-            }
-            //});
+            });
 
-            //outer.Wait();
+            outer.Wait();
         }
 
         public async Task TransferAllUSDCToHotWalletAsync()
@@ -212,7 +212,7 @@ namespace mm_bot.Services
                     if (coldWallet.SOL != 0)
                     {
                         _ = Task.Factory.StartNew(() =>
-                        TransferSolAsync(coldWallet, hotWallet, coldWallet.Lamports, coldWallet.SOL)
+                        TransferSolAsync(coldWallet, hotWallet, coldWallet.SOL)
                         , TaskCreationOptions.AttachedToParent);
                     }
                 }
@@ -262,6 +262,7 @@ namespace mm_bot.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError("Transaction Service - GetInfoAboutTransactionAsync Exception: {0}", ex.Message);
                 transaction = null;
             }
 
@@ -348,6 +349,21 @@ namespace mm_bot.Services
         public async Task<List<mmTransactionModel>> GetTodayTransactionsAsync()
         {
             return _mapper.Map<List<mmTransactionModel>>(await _mmTransactionRepository.GetTodayTransactionsAsync());
+        }
+
+        public async Task<string> GetRandomMintAsync()
+        {
+            string randomMint;
+
+            var mints = await _jupService.GetMintsAsync();
+            randomMint = mints[new Random().Next(mints.Count - 1)];
+
+            if (randomMint == _options.Value.USDCmint)
+            {
+                randomMint = mints[new Random().Next(mints.Count - 1)];
+            }
+
+            return randomMint;
         }
     }
 }

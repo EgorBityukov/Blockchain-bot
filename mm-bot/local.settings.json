@@ -2,7 +2,8 @@
   "ConnectionStrings": {
     "SqlConnectionString": "Server = localhost; DataBase = mmTransaction; Integrated Security = false; User Id = postgres; password = 4241; Port=5432;",
     "CryptoApiUrl": "http://134.209.216.186:1832/api/crypto/",
-    "JupApiUrl": "https://quote-api.jup.ag/v3/"
+    "JupApiUrl": "https://quote-api.jup.ag/v3/",
+    "RaydiumApiUrl": "https://api.raydium.io/v2/"
   },
   "Settings": {
     "HotWallet": {
@@ -28,14 +29,15 @@
       }
     ],
     "MainExchangeToken": "Token_Address",
-    "DailyTradingVolumeSolperColdWallet": 10.0,
-    "DailyTradingVolumeUSDCperColdWallet": 20.0,
+    "BaseVolumeSOLperColdWallet": 0.5,
+    "BaseVolumeUSDCperColdWallet": 2.0,
     "DailyTradingVolumeInUSDCperXtoken": 20,
     "PercentageOfRandomTransactionsForAddToken": 0.05,
     "MinimumDelayInSecondsForOneTransactionPerWallet": 180,
     "AutomaticGenerationOfWallets": false,
     "ColdWalletsCount": 10,
     //"USDCmint": "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU" //devnet
-    "USDCmint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v" //mainnet
+    "USDCmint": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", //mainnet
+    "XTokenMint": "So11111111111111111111111111111111111111112"
   }
 }

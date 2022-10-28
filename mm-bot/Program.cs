@@ -19,6 +19,7 @@ var config = new ConfigurationBuilder()
 string connectionString = config.GetConnectionString("SqlConnectionString");
 string cryptoApiUrl = config.GetConnectionString("CryptoApiUrl");
 string jupApiUrl = config.GetConnectionString("JupApiUrl");
+string raydiumApiUrl = config.GetConnectionString("RaydiumApiUrl");
 
 IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((hostContext, services) =>
@@ -43,6 +44,13 @@ IHost host = Host.CreateDefaultBuilder(args)
             config.Timeout = new TimeSpan(0, 0, 30);
             config.DefaultRequestHeaders.Clear();
         });
+        
+        services.AddHttpClient("RaydiumClient", config =>
+        {
+            config.BaseAddress = new Uri(raydiumApiUrl);
+            config.Timeout = new TimeSpan(0, 0, 30);
+            config.DefaultRequestHeaders.Clear();
+        });
 
         services.AddTransient<ICommandService, CommandService>();
         services.AddTransient<ImmTransactionRepository, mmTransactionRepository>();
@@ -53,6 +61,7 @@ IHost host = Host.CreateDefaultBuilder(args)
         services.AddTransient<IJupService, JupService>();
         services.AddTransient<ICleanUpService, CleanUpService>();
         services.AddTransient<IExchangeService, ExchangeService>();
+        services.AddTransient<IRaydiumService, RaydiumService>();
         
 
         services.Configure<ConfigSettings>(config.GetSection("Settings"));

@@ -132,21 +132,25 @@ namespace mm_bot.Services
             return tokens;
         }
 
-        public async Task UpdateWalletInfoWithoutTokensAsync(WalletModel wallet)
+        public async Task<WalletModel> UpdateWalletInfoWithoutTokensAsync(WalletModel wallet)
         {
             var updatedWallet = await GetInfoAboutWalletAsync(wallet.PrivateKey);
             wallet.Lamports = updatedWallet.Lamports;
             wallet.SOL = updatedWallet.SOL;
             await _walletRepository.UpdateWalletAsync(_mapper.Map<Wallet>(wallet));
+
+            return wallet;
         }
 
-        public async Task UpdateWalletInfoWithTokensAsync(WalletModel wallet)
+        public async Task<WalletModel> UpdateWalletInfoWithTokensAsync(WalletModel wallet)
         {
             var updatedWallet = await GetInfoAboutWalletAsync(wallet.PrivateKey);
             wallet.Lamports = updatedWallet.Lamports;
             wallet.SOL = updatedWallet.SOL;
             wallet.Tokens = await GetWalletTokensAsync(wallet.PublicKey);
             await _walletRepository.UpdateWalletAsync(_mapper.Map<Wallet>(wallet));
+
+            return wallet;
         }
 
         public async Task UpdateHotWalletAsync(bool updateTokens)
