@@ -356,11 +356,11 @@ namespace mm_bot.Services
             string randomMint;
 
             var mints = await _jupService.GetMintsAsync();
-            randomMint = mints[new Random().Next(mints.Count - 1)];
+            randomMint = mints[new Random().Next(mints.Count)];
 
             if (randomMint == _options.Value.USDCmint)
             {
-                randomMint = mints[new Random().Next(mints.Count - 1)];
+                randomMint = mints[new Random().Next(mints.Count)];
             }
 
             return randomMint;

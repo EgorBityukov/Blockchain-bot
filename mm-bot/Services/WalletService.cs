@@ -37,6 +37,10 @@ namespace mm_bot.Services
                 {
                     cancellationTokenSourceTransactions.Cancel();
                 }
+                else
+                {
+                    cancellationTokenSourceTransactions = new CancellationTokenSource();
+                }
 
                 await Task.Delay(10800000, cancellationToken);
             }
@@ -96,6 +100,10 @@ namespace mm_bot.Services
 
                 await _walletRepository.AddWalletAsync(_mapper.Map<Wallet>(hotWallet));
             }
+            else
+            {
+                await UpdateHotWalletAsync(true);
+            }
         }
 
         public async Task<WalletModel> GetInfoAboutWalletAsync(string privateKey)
@@ -151,6 +159,17 @@ namespace mm_bot.Services
             await _walletRepository.UpdateWalletAsync(_mapper.Map<Wallet>(wallet));
 
             return wallet;
+        }
+
+        public async Task UpdateColdWalletsAsync()
+        {
+            var coldWallets = await GetColdWalletsAsync();
+
+            foreach (var coldWallet in coldWallets)
+            {
+                await UpdateWalletInfoWithTokensAsync(coldWallet);
+            }
+
         }
 
         public async Task UpdateHotWalletAsync(bool updateTokens)

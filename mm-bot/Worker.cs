@@ -42,7 +42,8 @@ namespace mm_bot
             }
             else
             {
-                await _walletService.AddColdWalletsFromConfigAsync(_options.Value.ColdWallet); 
+                await _walletService.AddColdWalletsFromConfigAsync(_options.Value.ColdWallet);
+                await _walletService.UpdateColdWalletsAsync();
             }
 
             //Will not add hot wallet if already exsist
@@ -61,11 +62,13 @@ namespace mm_bot
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                //Start exchange transactions
-                //_ = Task.Run(() => _exchangeService.StartExchangeAsync(cancellationTokenSourceTransactions));
+                if (!cancellationTokenSourceTransactions.IsCancellationRequested)
+                {
+                    //Start exchange transactions
+                    await _exchangeService.StartExchangeAsync(cancellationTokenSourceTransactions);
+                } 
 
-                _logger.LogInformation("Worker in time {time}", DateTime.Now);
-                await Task.Delay(3000, stoppingToken);
+                await Task.Delay(3600000, stoppingToken);
             }
         }
 

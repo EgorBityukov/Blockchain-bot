@@ -21,6 +21,7 @@ namespace mm_bot.Services.Interfaces
         public Task<WalletModel> UpdateWalletInfoWithoutTokensAsync(WalletModel wallet);
         public Task<WalletModel> UpdateWalletInfoWithTokensAsync(WalletModel wallet);
         public Task UpdateHotWalletAsync(bool updateTokens);
+        public Task UpdateColdWalletsAsync();
         public Task MonitoringSolBalanceAsync(CancellationTokenSource cancellationTokenSourceTransactions, CancellationToken cancellationToken);
     }
 }

@@ -12,6 +12,7 @@ namespace mm_bot.Services
 {
     public class ExchangeService : IExchangeService
     {
+        private readonly ILogger<Worker> _logger;
         private readonly IOptions<ConfigSettings> _options;
         private readonly ITransactionService _transactionService;
         private readonly IWalletService _walletService;
@@ -19,11 +20,13 @@ namespace mm_bot.Services
 
         private RandomGenerator rnd = new RandomGenerator();
 
-        public ExchangeService(IOptions<ConfigSettings> options,
+        public ExchangeService(ILogger<Worker> logger,
+                               IOptions<ConfigSettings> options,
                                ITransactionService transactionService,
                                IWalletService walletService,
                                IRaydiumService raydiumService)
         {
+            _logger = logger;
             _transactionService = transactionService;
             _walletService = walletService;
             _options = options;
@@ -32,7 +35,6 @@ namespace mm_bot.Services
 
         public async Task StartExchangeAsync(CancellationTokenSource cancellationTokenSource)
         {
-            //ThreadPool.QueueUserWorkItem(async () =>{);
             await CheckBaseLimitsOfColdWalletsAsync();
 
             while (!cancellationTokenSource.Token.IsCancellationRequested)
@@ -119,6 +121,7 @@ namespace mm_bot.Services
 
             if (dailyTradingVolumeInUSDCperXtoken > _options.Value.DailyTradingVolumeInUSDCperXtoken)
             {
+                _logger.LogError("System stop. Daily Trading Volume In USDC per X-Token: {0}", dailyTradingVolumeInUSDCperXtoken);
                 cancellationTokenSource.Cancel();
             }
         }

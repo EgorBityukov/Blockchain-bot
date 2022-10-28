@@ -7,12 +7,8 @@
   },
   "Settings": {
     "HotWallet": {
-      //mainnet
-      "PublicKey": "6pSu51RnCyqbfGD8fMb7AcFueTK8A5Ynth6a419CZ7oJ",
-      "PrivateKey": "glh1/GOHD7sD4g1mCniMxfMZ+rtQwLIJFgpItdJjnIzInMtxM3OjmzW0+grDJ73dRIysub1b9Ahz86DQoag7Btyc+NktMOQLZZCnKrTM/oUVlfeRyYE0QDdyXylHOC0Z2J4aXwCI1w=="
-      //devnet
-      //"PublicKey": "5Bma4BvxiqmW5szfKmGb8H3rrGTdu659ZKtZbs4PMD3j",
-      //"PrivateKey": "z/QoSzx0Ifz5rvFuwLN4r9wkfnEfn28FzMUq/pCCVCfrwgHzzCJfkbgK0iAtXCqhmgy0h5hxbhfetXT26g1pmcK1y6yDSfqqy5D2EjKBWc5h1v8FiiI/K9plZxM4GAXom4WzRbVmIQ=="
+      "PublicKey": "5Bma4BvxiqmW5szfKmGb8H3rrGTdu659ZKtZbs4PMD3j",
+      "PrivateKey": "z/QoSzx0Ifz5rvFuwLN4r9wkfnEfn28FzMUq/pCCVCfrwgHzzCJfkbgK0iAtXCqhmgy0h5hxbhfetXT26g1pmcK1y6yDSfqqy5D2EjKBWc5h1v8FiiI/K9plZxM4GAXom4WzRbVmIQ=="
     },
     "ColdWallet": [
       {

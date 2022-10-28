@@ -30,6 +30,14 @@ IHost host = Host.CreateDefaultBuilder(args)
         services.AddDbContext<mmTransactionDBContext>(
         options => options.UseNpgsql(connectionString));
 
+        services.AddLogging(loggingBuilder => {
+            loggingBuilder.AddFile("logs/log_{0:yyyy}-{0:MM}-{0:dd}.log", fileLoggerOpts => {
+                fileLoggerOpts.FormatLogFileName = fName => {
+                    return String.Format(fName, DateTime.UtcNow);
+                };
+            });
+        });
+
         services.AddHttpClient("CryptoClient", configuration =>
         {
             configuration.BaseAddress = new Uri(cryptoApiUrl);
