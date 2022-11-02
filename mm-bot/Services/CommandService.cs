@@ -10,10 +10,13 @@ namespace mm_bot.Services
     public class CommandService : ICommandService
     {
         private readonly ICleanUpService _cleanUpService;
+        private readonly IWalletService _walletService;
 
-        public CommandService(ICleanUpService cleanUpService)
+        public CommandService(ICleanUpService cleanUpService,
+                              IWalletService walletService)
         {
             _cleanUpService = cleanUpService;
+            _walletService = walletService;
         }
 
         public async Task<CancellationTokenSource> ProcessCommandAsync(string command, CancellationTokenSource cancellationTokenSourceTransactions)
@@ -21,11 +24,12 @@ namespace mm_bot.Services
             if (command.Equals("-cleanup"))
             {
                 var result = await _cleanUpService.CleanUpAsync();
-                cancellationTokenSourceTransactions = new CancellationTokenSource();
                 return cancellationTokenSourceTransactions;
             }
             if (command.Equals("-start"))
             {
+                await _walletService.UpdateColdWalletsAsync();
+                await _walletService.UpdateHotWalletAsync(true);
                 cancellationTokenSourceTransactions = new CancellationTokenSource();
                 return cancellationTokenSourceTransactions;
             }

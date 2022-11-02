@@ -72,7 +72,8 @@ namespace mm_bot
                     _logger.LogInformation("Program stopped");
                 }
 
-                await Task.Delay(3600000, stoppingToken);
+                // 10 minut delay
+                await Task.Delay(600000, stoppingToken);
             }
         }
 
