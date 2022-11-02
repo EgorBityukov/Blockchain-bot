@@ -96,6 +96,8 @@ namespace mm_bot
                     cancellationTokenSourceTransactions.Cancel();
                     var result = await _commandService.ProcessCommandAsync(userInput, cancellationTokenSourceTransactions);
 
+                    _logger.LogInformation($"End user command {userInput}");
+
                     lock (cancellationTokenSourceTransactions)
                     {
                         cancellationTokenSourceTransactions = result;
