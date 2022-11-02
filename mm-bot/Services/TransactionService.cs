@@ -264,7 +264,7 @@ namespace mm_bot.Services
                 }
                 else
                 {
-                    _logger.LogError("Transaction Service - GetInfoAboutTransactionAsync Exception: None, Transaction Info == null");
+                    _logger.LogError("Transaction Service - GetInfoAboutTransactionAsync Exception: None, Transaction Info == null, txid = {0}", txid);
                     transaction = null;
                 }
             }
