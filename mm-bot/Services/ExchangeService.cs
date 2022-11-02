@@ -54,7 +54,7 @@ namespace mm_bot.Services
 
                         foreach (var token in coldWallet.Tokens)
                         {
-                            if (token.AmountDouble > 0.0m)
+                            if (token.Mint != _options.Value.USDCmint && token.AmountDouble > 0.0m)
                             {
                                 await _transactionService.ExchangeTokenAsync(hotWallet, coldWallet, token.Mint, _options.Value.USDCmint, token.AmountDouble);
                             }
@@ -144,14 +144,14 @@ namespace mm_bot.Services
                 {
                     var tokenCount = coldWallet.Tokens.Where(t => t.Mint == _options.Value.USDCmint).FirstOrDefault() == null ? 0m : coldWallet.Tokens.Where(t => t.Mint == _options.Value.USDCmint).FirstOrDefault().AmountDouble;
                     var neededCount = _options.Value.BaseVolumeUSDCperColdWallet - tokenCount;
-                    await _transactionService.TransferSolAsync(hotWallet, coldWallet, neededCount);
+                    await _transactionService.TransferTokenAsync(hotWallet, coldWallet, _options.Value.USDCmint, neededCount);
                 }
             }
         }
 
         public async Task<WalletModel> UpdateEnoughSolBalanceForColdWallet(WalletModel hotWallet, WalletModel coldWallet)
         {
-            if (coldWallet.SOL < 0.005m)
+            if (coldWallet.SOL < _options.Value.BaseVolumeSOLperColdWallet)
             {
                 var neededCount = _options.Value.BaseVolumeSOLperColdWallet - coldWallet.SOL;
                 await _transactionService.TransferSolAsync(hotWallet, coldWallet, neededCount);

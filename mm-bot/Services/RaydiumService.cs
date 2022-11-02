@@ -31,17 +31,22 @@ namespace mm_bot.Services
 
             string responseBody = await response.Content.ReadAsStringAsync();
 
-            JObject ratesResponce = JObject.Parse(responseBody);
-
-            if (ratesResponce.ContainsKey("error"))
+            if (responseBody.Contains("error"))
             {
                 _logger.LogError("JupService - Get Quote Http Request Exception /n" +
-                    "Message: {1}", ratesResponce.GetValue("message"));
+                    "Response body: {0}", responseBody);
                 return null;
             }
             else
             {
-                List<ExchangeRatesResponseModel> rates = ratesResponce.ToObject<List<ExchangeRatesResponseModel>>();
+                var ratesResponce = JArray.Parse(responseBody);
+                List<ExchangeRatesResponseModel> rates = new List<ExchangeRatesResponseModel>();
+
+                foreach (var rate in ratesResponce)
+                {
+                    rates.Add(rate.ToObject<ExchangeRatesResponseModel>());
+                }
+
                 return rates;
             }
         }

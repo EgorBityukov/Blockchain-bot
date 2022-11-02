@@ -9,12 +9,12 @@ namespace mm_bot
         private readonly ILogger<Worker> _logger;
         private readonly IWalletService _walletService;
         private readonly IOptions<ConfigSettings> _options;
-        private readonly ICommandService  _commandService;
+        private readonly ICommandService _commandService;
         private readonly IExchangeService _exchangeService;
 
         CancellationTokenSource cancellationTokenSourceTransactions = new CancellationTokenSource();
 
-        public Worker(ILogger<Worker> logger, 
+        public Worker(ILogger<Worker> logger,
                       IWalletService walletService,
                       IOptions<ConfigSettings> options,
                       ICommandService commandService,
@@ -46,11 +46,11 @@ namespace mm_bot
                 await _walletService.UpdateColdWalletsAsync();
             }
 
-            //Will not add hot wallet if already exsist
+            //Will not add hot wallet, if already exsist, update it
             await _walletService.AddHotWalletFromConfigAsync(_options.Value.HotWallet);
 
             //Listen input commands
-            _ = Task.Run(() => ListenForInput(cancellationTokenSourceTransactions));
+            _ = Task.Run(() => ListenForInput(cancellationToken));
 
             //Monitoring Sol balance on Hot Wallet
             _ = Task.Run(() => _walletService.MonitoringSolBalanceAsync(cancellationTokenSourceTransactions, cancellationToken));
@@ -66,7 +66,11 @@ namespace mm_bot
                 {
                     //Start exchange transactions
                     await _exchangeService.StartExchangeAsync(cancellationTokenSourceTransactions);
-                } 
+                }
+                else
+                {
+                    _logger.LogInformation("Program stopped");
+                }
 
                 await Task.Delay(3600000, stoppingToken);
             }
@@ -78,17 +82,24 @@ namespace mm_bot
             await Task.CompletedTask;
         }
 
-        private async Task ListenForInput(CancellationTokenSource cancellationTokenSourceTransactions)
+        private async Task ListenForInput(CancellationToken cancellationToken)
         {
-            while (true)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 string userInput = Console.ReadLine();
+
                 if (!String.IsNullOrWhiteSpace(userInput))
                 {
                     _logger.LogInformation($"Executing user command {userInput}...");
+
+                    cancellationTokenSourceTransactions.Cancel();
                     var result = await _commandService.ProcessCommandAsync(userInput, cancellationTokenSourceTransactions);
-                    cancellationTokenSourceTransactions = result;
-                }    
+
+                    lock (cancellationTokenSourceTransactions)
+                    {
+                        cancellationTokenSourceTransactions = result;
+                    }
+                }
             }
         }
     }

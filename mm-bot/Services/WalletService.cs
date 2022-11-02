@@ -13,17 +13,20 @@ namespace mm_bot.Services
 {
     public class WalletService : IWalletService
     {
+        private readonly ILogger<Worker> _logger;
         private readonly ICryptoService _cryptoService;
         private readonly IWalletRepository _walletRepository;
         private readonly IMapper _mapper;
 
         public WalletService(ICryptoService cryptoService,
                              IWalletRepository walletRepository,
-                             IMapper mapper)
+                             IMapper mapper,
+                             ILogger<Worker> logger)
         {
             _cryptoService = cryptoService;
             _walletRepository = walletRepository;
             _mapper = mapper;
+            _logger = logger;
         }
 
         public async Task MonitoringSolBalanceAsync(CancellationTokenSource cancellationTokenSourceTransactions, CancellationToken cancellationToken)
@@ -33,13 +36,12 @@ namespace mm_bot.Services
                 var hotWallet = await GetHotWalletAsync();
                 await UpdateWalletInfoWithoutTokensAsync(hotWallet);
 
+                await Task.Delay(6000, cancellationToken);
+
                 if (hotWallet.SOL < 0.1m)
                 {
                     cancellationTokenSourceTransactions.Cancel();
-                }
-                else
-                {
-                    cancellationTokenSourceTransactions = new CancellationTokenSource();
+                    _logger.LogInformation("Program stopped because SOL balance on hot wallet less 0.1");
                 }
 
                 await Task.Delay(10800000, cancellationToken);

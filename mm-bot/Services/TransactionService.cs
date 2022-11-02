@@ -227,38 +227,46 @@ namespace mm_bot.Services
             mmTransactionModel transaction;
             try
             {
-                transaction = new mmTransactionModel();
-
-                if (operationType.Equals("Exchange"))
+                if (transactionInfo != null && transactionInfo.result != null)
                 {
+                    transaction = new mmTransactionModel();
 
-                    if (transactionInfo.result.meta.preTokenBalances != null)
+                    if (operationType.Equals("Exchange"))
                     {
-                        if (transactionInfo.result.meta.preTokenBalances.Where(b => b.owner == publicKey && b.mint == recieveMint).Any())
+
+                        if (transactionInfo.result.meta.preTokenBalances != null)
                         {
-                            transaction.RecieveTokenCount = transactionInfo.result.meta.postTokenBalances
-                                                        .Where(b => b.owner == publicKey && b.mint == recieveMint).FirstOrDefault()
-                                                        .uiTokenAmount.uiAmount.GetValueOrDefault(0) - transactionInfo.result.meta.preTokenBalances
-                                                        .Where(b => b.owner == publicKey && b.mint == recieveMint).FirstOrDefault()
-                                                        .uiTokenAmount.uiAmount.GetValueOrDefault(0);
+                            if (transactionInfo.result.meta.preTokenBalances.Where(b => b.owner == publicKey && b.mint == recieveMint).Any())
+                            {
+                                transaction.RecieveTokenCount = transactionInfo.result.meta.postTokenBalances
+                                                            .Where(b => b.owner == publicKey && b.mint == recieveMint).FirstOrDefault()
+                                                            .uiTokenAmount.uiAmount.GetValueOrDefault(0) - transactionInfo.result.meta.preTokenBalances
+                                                            .Where(b => b.owner == publicKey && b.mint == recieveMint).FirstOrDefault()
+                                                            .uiTokenAmount.uiAmount.GetValueOrDefault(0);
+                            }
+                            else
+                            {
+                                transaction.RecieveTokenCount = transactionInfo.result.meta.postTokenBalances
+                                                            .Where(b => b.owner == publicKey && b.mint == recieveMint).FirstOrDefault()
+                                                            .uiTokenAmount.uiAmount.GetValueOrDefault(0);
+                            }
                         }
                         else
                         {
-                            transaction.RecieveTokenCount = transactionInfo.result.meta.postTokenBalances
-                                                        .Where(b => b.owner == publicKey && b.mint == recieveMint).FirstOrDefault()
-                                                        .uiTokenAmount.uiAmount.GetValueOrDefault(0);
+                            transaction.RecieveTokenCount = (decimal)(transactionInfo.result.meta.postBalances.FirstOrDefault()
+                                                                    - transactionInfo.result.meta.preBalances.FirstOrDefault())
+                                                                    / 1000000000;
                         }
                     }
-                    else
-                    {
-                        transaction.RecieveTokenCount = (decimal)(transactionInfo.result.meta.postBalances.FirstOrDefault()
-                                                                - transactionInfo.result.meta.preBalances.FirstOrDefault())
-                                                                / 1000000000;
-                    }
-                }
 
-                transaction.Status = transactionInfo.result.meta.status.Err == null ? "Ok" : "Error";
-                transaction.BalanceXToken = (decimal)transactionInfo.result.meta.postBalances.First() / 1000000000;
+                    transaction.Status = transactionInfo.result.meta.status.Err == null ? "Ok" : "Error";
+                    transaction.BalanceXToken = (decimal)transactionInfo.result.meta.postBalances.First() / 1000000000;
+                }
+                else
+                {
+                    _logger.LogError("Transaction Service - GetInfoAboutTransactionAsync Exception: None, Transaction Info == null");
+                    transaction = null;
+                }
             }
             catch (Exception ex)
             {
@@ -310,10 +318,14 @@ namespace mm_bot.Services
                 else
                 {
                     transaction.Status = "Error";
-                }
-
-                await AddTransactionAsync(transaction);
+                }  
             }
+            else
+            {
+                transaction.Status = "Error";
+            }
+
+            await AddTransactionAsync(transaction);
 
             return transaction;
         }
@@ -340,7 +352,7 @@ namespace mm_bot.Services
         public async Task<bool> AllowedWalletExchange(WalletModel wallet, int delay)
         {
             var todayTran = await GetTodayTransactionsAsync();
-            return todayTran.Where(t => t.SendWalletAddress == wallet.PublicKey
+            return !todayTran.Where(t => t.SendWalletAddress == wallet.PublicKey
                                  && t.OperationType == "Exchange"
                                  && t.Date > DateTime.UtcNow.AddSeconds(-delay)).Any();
 
