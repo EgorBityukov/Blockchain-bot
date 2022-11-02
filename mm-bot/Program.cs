@@ -28,7 +28,8 @@ IHost host = Host.CreateDefaultBuilder(args)
         services.AddAutoMapper(typeof(WalletProfile), typeof(mmTransactionProfile));
 
         services.AddDbContext<mmTransactionDBContext>(
-        options => options.UseNpgsql(connectionString));
+        options => options.UseNpgsql(connectionString,
+                                    DBoptions => DBoptions.EnableRetryOnFailure(5, TimeSpan.FromSeconds(2), null)));
 
         services.AddLogging(loggingBuilder => {
             loggingBuilder.AddFile("logs/log_{0:yyyy}-{0:MM}-{0:dd}.log", fileLoggerOpts => {

@@ -9,12 +9,9 @@ namespace mmTransactionDB.DataAccess
         public DbSet<Wallet> Wallets { get; set; }
         public DbSet<Token> Tokens { get; set; }
 
-        //public mmTransactionDBContext() : base()
-        //{
-        //}
-
         public mmTransactionDBContext(DbContextOptions<mmTransactionDBContext> options) : base(options)
         {
+            Database.EnsureCreated();
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

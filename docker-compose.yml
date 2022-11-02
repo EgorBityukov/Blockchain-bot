@@ -1,0 +1,21 @@
+version: '3.4'
+
+services:
+  mm-bot:
+    image: ${DOCKER_REGISTRY-}mmbot
+    build:
+      context: .
+      dockerfile: mm-bot/Dockerfile
+    depends_on:
+        - db
+  db:
+    image: postgres
+    ports: 
+            - "5432"
+    restart: always
+    environment:
+        POSTGRES_USER: "postgres"
+        POSTGRES_PASSWORD: "4241"
+        POSTGRES_DB: mmTransactions
+
+    
