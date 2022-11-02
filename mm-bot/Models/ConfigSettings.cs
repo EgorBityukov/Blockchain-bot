@@ -10,7 +10,6 @@ namespace mm_bot.Models
     {
         public MainWalletInfo HotWallet { get; set; }
         public List<MainWalletInfo> ColdWallet { get; set; }
-        public string MainExchangeToken { get; set; }
         public decimal BaseVolumeSOLperColdWallet { get; set; }
         public decimal BaseVolumeUSDCperColdWallet { get; set; }
         public decimal DailyTradingVolumeInUSDCperXtoken { get; set; }
