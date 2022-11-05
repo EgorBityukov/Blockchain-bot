@@ -1,6 +1,6 @@
 {
   "ConnectionStrings": {
-    "SqlConnectionString": "Server = db; DataBase = mmTransaction; Integrated Security = false; User Id = postgres; password = 4241; Port=5432;",
+    "SqlConnectionString": "Server = localhost; DataBase = mmTransaction; Integrated Security = false; User Id = postgres; password = 4241; Port=5432;",
     "CryptoApiUrl": "http://134.209.216.186:1832/api/crypto/",
     "JupApiUrl": "https://quote-api.jup.ag/v3/",
     "RaydiumApiUrl": "https://api.raydium.io/v2/"

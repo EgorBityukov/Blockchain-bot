@@ -21,12 +21,13 @@ namespace mm_bot.Services
 
         public async Task<CancellationTokenSource> ProcessCommandAsync(string command, CancellationTokenSource cancellationTokenSourceTransactions)
         {
-            if (command.Equals("-cleanup"))
+            if (command.Equals("cleanup"))
             {
-                var result = await _cleanUpService.CleanUpAsync();
+                cancellationTokenSourceTransactions.Cancel();
+                await _cleanUpService.CleanUpAsync();
                 return cancellationTokenSourceTransactions;
             }
-            if (command.Equals("-start"))
+            if (command.Equals("start"))
             {
                 await _walletService.UpdateColdWalletsAsync();
                 await _walletService.UpdateHotWalletAsync(true);

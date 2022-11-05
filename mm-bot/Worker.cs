@@ -48,18 +48,38 @@ namespace mm_bot
 
             //Will not add hot wallet, if already exsist, update it
             await _walletService.AddHotWalletFromConfigAsync(_options.Value.HotWallet);
+            
+            var args = Environment.GetCommandLineArgs();
 
-            //Listen input commands
-            _ = Task.Run(() => ListenForInput(cancellationToken));
+            if (args.Length > 0)
+            {
+                if (args.Contains("cleanup"))
+                {
+                    _logger.LogInformation("CleanUp command START");
+
+                    var result = await _commandService.ProcessCommandAsync("cleanup", cancellationTokenSourceTransactions);
+
+                    _logger.LogInformation("CleanUp command END");
+
+                    lock (cancellationTokenSourceTransactions)
+                    {
+                        cancellationTokenSourceTransactions = result;
+                    }
+                }
+            }
 
             //Monitoring Sol balance on Hot Wallet
             _ = Task.Run(() => _walletService.MonitoringSolBalanceAsync(cancellationTokenSourceTransactions, cancellationToken));
+
+            //Listen input commands
+            //_ = Task.Run(() => ListenForInput(cancellationToken));
 
             await base.StartAsync(cancellationToken);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+
             while (!stoppingToken.IsCancellationRequested)
             {
                 if (!cancellationTokenSourceTransactions.IsCancellationRequested)
@@ -83,27 +103,27 @@ namespace mm_bot
             await Task.CompletedTask;
         }
 
-        private async Task ListenForInput(CancellationToken cancellationToken)
-        {
-            while (!cancellationToken.IsCancellationRequested)
-            {
-                string userInput = Console.ReadLine();
+        //private async Task ListenForInput(CancellationToken cancellationToken)
+        //{
+        //    while (!cancellationToken.IsCancellationRequested)
+        //    {
+        //        string userInput = Console.ReadLine();
 
-                if (!String.IsNullOrWhiteSpace(userInput))
-                {
-                    _logger.LogInformation($"Executing user command {userInput}...");
+        //        if (!String.IsNullOrWhiteSpace(userInput))
+        //        {
+        //            _logger.LogInformation($"Executing user command {userInput}...");
 
-                    cancellationTokenSourceTransactions.Cancel();
-                    var result = await _commandService.ProcessCommandAsync(userInput, cancellationTokenSourceTransactions);
+        //            cancellationTokenSourceTransactions.Cancel();
+        //            var result = await _commandService.ProcessCommandAsync(userInput, cancellationTokenSourceTransactions);
 
-                    _logger.LogInformation($"End user command {userInput}");
+        //            _logger.LogInformation($"End user command {userInput}");
 
-                    lock (cancellationTokenSourceTransactions)
-                    {
-                        cancellationTokenSourceTransactions = result;
-                    }
-                }
-            }
-        }
+        //            lock (cancellationTokenSourceTransactions)
+        //            {
+        //                cancellationTokenSourceTransactions = result;
+        //            }
+        //        }
+        //    }
+        //}
     }
 }
