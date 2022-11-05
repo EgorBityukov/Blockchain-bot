@@ -157,8 +157,8 @@ namespace mm_bot.Services
             var hotWallet = await _walletService.GetHotWalletAsync();
             var coldWallets = await _walletService.GetColdWalletsAsync();
 
-            var outer = Task.Factory.StartNew(() =>
-            {
+            //var outer = Task.Factory.StartNew(() =>
+            //{
                 foreach (var coldWallet in coldWallets)
                 {
                     foreach (var token in coldWallet.Tokens)
@@ -171,9 +171,9 @@ namespace mm_bot.Services
                         }
                     }
                 }
-            });
+            //});
 
-            outer.Wait();
+            //outer.Wait();
         }
 
         public async Task TransferAllUSDCToHotWalletAsync()
@@ -182,8 +182,8 @@ namespace mm_bot.Services
             var hotWallet = await _walletService.GetHotWalletAsync();
             var coldWallets = await _walletService.GetColdWalletsAsync();
 
-            var outer = Task.Factory.StartNew(() =>
-            {
+            //var outer = Task.Factory.StartNew(() =>
+            //{
                 foreach (var coldWallet in coldWallets)
                 {
                     if (coldWallet.Tokens.Where(t => t.Mint == USDCmint).FirstOrDefault() != null
@@ -195,9 +195,9 @@ namespace mm_bot.Services
                          , TaskCreationOptions.AttachedToParent);
                     }
                 }
-            });
+            //});
 
-            outer.Wait();
+            //outer.Wait();
         }
 
         public async Task TransferAllSOLToHotWalletAsync()
@@ -205,8 +205,8 @@ namespace mm_bot.Services
             var hotWallet = await _walletService.GetHotWalletAsync();
             var coldWallets = await _walletService.GetColdWalletsAsync();
 
-            var outer = Task.Factory.StartNew(() =>
-            {
+            //var outer = Task.Factory.StartNew(() =>
+            //{
                 foreach (var coldWallet in coldWallets)
                 {
                     if (coldWallet.SOL != 0)
@@ -216,9 +216,9 @@ namespace mm_bot.Services
                         , TaskCreationOptions.AttachedToParent);
                     }
                 }
-            });
+            //});
 
-            outer.Wait();
+            //outer.Wait();
         }
 
         public async Task<mmTransactionModel> GetInfoAboutTransactionAsync(string txid, string operationType, string publicKey, string recieveMint)

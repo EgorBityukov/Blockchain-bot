@@ -36,8 +36,6 @@ namespace mm_bot.Services
                 var hotWallet = await GetHotWalletAsync();
                 await UpdateWalletInfoWithoutTokensAsync(hotWallet);
 
-                await Task.Delay(6000, cancellationToken);
-
                 if (hotWallet.SOL < 0.1m)
                 {
                     cancellationTokenSourceTransactions.Cancel();
