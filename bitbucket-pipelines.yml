@@ -1,0 +1,22 @@
+#  Template .NET Core build
+
+#  This template allows you to validate your .NET Core package.
+#  The workflow allows running tests and code linting on the default branch.
+
+# To run your pipeline on a Windows machine, create a self-hosted Windows runner.
+# For instructions on setting up a Windows runner, see https://support.atlassian.com/bitbucket-cloud/docs/set-up-runners-for-windows/
+
+image: mcr.microsoft.com/dotnet/core/sdk:3.1
+
+pipelines:
+  default:
+    - step:
+        name: Build and Deploy
+        services:
+          - docker
+        script:
+          - export IMAGE_NAME=$ACCOUNT/$APP_NAME:$BITBUCKET_COMMIT
+          - docker login -u $USERNAME -p $PASSWORD
+          - docker build -t $IMAGE_NAME /mm-bot/.
+          - docker push $IMAGE_NAME
+
