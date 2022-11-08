@@ -17,6 +17,6 @@ pipelines:
         script:
           - export IMAGE_NAME=$ACCOUNT/$APP_NAME:$BITBUCKET_COMMIT
           - docker login -u $USERNAME -p $PASSWORD
-          - docker build -t $IMAGE_NAME /mm-bot/.
+          - docker build . -t $IMAGE_NAME -f mm-bot/Dockerfile
           - docker push $IMAGE_NAME
 
