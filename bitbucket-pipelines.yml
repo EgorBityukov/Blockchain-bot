@@ -24,7 +24,7 @@ pipelines:
             name: 'Run market-making'
             trigger: 'manual'
             script:
-              - echo "run market-making"
+              - cat ./run.sh | ssh root@134.209.216.186
         - step:
             name: 'Run with cleanup'
             trigger: 'manual'
