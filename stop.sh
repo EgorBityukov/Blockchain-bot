@@ -1,0 +1,2 @@
+docker stop mm-bot
+
