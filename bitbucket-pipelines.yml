@@ -10,24 +10,24 @@ image: mcr.microsoft.com/dotnet/core/sdk:3.1
 
 pipelines:
   default:
+    - step:
+        name: Build and Deploy
+        services:
+          - docker
+        script:
+          - export IMAGE_NAME=$ACCOUNT/$APP_NAME:latest
+          - docker login -u $USERNAME -p $PASSWORD
+          - docker build . -t $IMAGE_NAME -f mm-bot/Dockerfile
+          - docker push $IMAGE_NAME
     - parallel:
         - step:
-            name: Build and Deploy
-            services:
-              - docker
+            name: 'Run market-making'
+            trigger: 'manual'
             script:
-              - export IMAGE_NAME=$ACCOUNT/$APP_NAME:latest
-              - docker login -u $USERNAME -p $PASSWORD
-              - docker build . -t $IMAGE_NAME -f mm-bot/Dockerfile
-              - docker push $IMAGE_NAME
-    - step:
-        name: 'Run market-making'
-        trigger: 'manual'
-        script:
-          - echo "run market-making"
-    - step:
-        name: 'Run with cleanup'
-        trigger: 'manual'
-        script:
-          - echo "run cleanup"
+              - echo "run market-making"
+        - step:
+            name: 'Run with cleanup'
+            trigger: 'manual'
+            script:
+              - echo "run cleanup"
 
