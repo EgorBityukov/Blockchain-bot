@@ -19,4 +19,14 @@ pipelines:
           - docker login -u $USERNAME -p $PASSWORD
           - docker build . -t $IMAGE_NAME -f mm-bot/Dockerfile
           - docker push $IMAGE_NAME
+    - step:
+        name: 'Run market-making'
+        trigger: 'manual'
+        script:
+          - echo "run market-making"
+    - step:
+        name: 'Run with cleanup'
+        trigger: 'manual'
+        script:
+          - echo "run cleanup"
 
