@@ -20,11 +20,6 @@ pipelines:
             - docker login -u $USERNAME -p $PASSWORD
             - docker build . -t $IMAGE_NAME -f mm-bot/Dockerfile
             - docker push $IMAGE_NAME
-      - step:
-          name: 'stop'
-          trigger: 'manual'
-          script:
-            - cat ./stop.sh | ssh root@134.209.216.186
     - parallel:
         - step:
             name: 'Run market-making'
@@ -36,4 +31,9 @@ pipelines:
             trigger: 'manual'
             script:
               - cat ./run-cleanup.sh | ssh root@134.209.216.186
+        - step:
+            name: 'stop'
+            trigger: 'manual'
+            script:
+              - cat ./stop.sh | ssh root@134.209.216.186
 
