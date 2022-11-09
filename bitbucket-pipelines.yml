@@ -21,10 +21,10 @@ pipelines:
             - docker build . -t $IMAGE_NAME -f mm-bot/Dockerfile
             - docker push $IMAGE_NAME
       - step:
-          name: 'Run market-making'
+          name: 'stop'
           trigger: 'manual'
           script:
-            - cat ./run.sh | ssh root@134.209.216.186
+            - cat ./stop.sh | ssh root@134.209.216.186
     - parallel:
         - step:
             name: 'Run market-making'
