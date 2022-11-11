@@ -82,6 +82,7 @@ namespace mm_bot.Services
         public async Task<string> TransferSolToAnotherWalletAsync(string privateKey, string toPublicKey, decimal sol)
         {
             _httpClient.DefaultRequestHeaders.Add("x-auth-token", privateKey);
+            _httpClient.DefaultRequestHeaders.Add("X-Fee-Payer", privateKey);
 
             var parameters = new Dictionary<string, string>()
             {
@@ -119,6 +120,7 @@ namespace mm_bot.Services
             string responseBody = await response.Content.ReadAsStringAsync();
 
             _httpClient.DefaultRequestHeaders.Remove("x-auth-token");
+            _httpClient.DefaultRequestHeaders.Remove("X-Fee-Payer");
 
             JObject transferLamportsResponce = JObject.Parse(responseBody);
 
@@ -137,6 +139,7 @@ namespace mm_bot.Services
         public async Task<string> TransferTokenToAnotherWalletAsync(string privateKey, string mint, string toPublicKey, decimal count)
         {
             _httpClient.DefaultRequestHeaders.Add("x-auth-token", privateKey);
+            _httpClient.DefaultRequestHeaders.Add("X-Fee-Payer", privateKey);
 
             var parameters = new Dictionary<string, string>()
             {
@@ -175,6 +178,7 @@ namespace mm_bot.Services
             string responseBody = await response.Content.ReadAsStringAsync();
 
             _httpClient.DefaultRequestHeaders.Remove("x-auth-token");
+            _httpClient.DefaultRequestHeaders.Remove("X-Fee-Payer");
 
             JObject transferTokenResponce = JObject.Parse(responseBody);
 
@@ -251,6 +255,7 @@ namespace mm_bot.Services
         {
             string requestUrl = "transactions/sign";
             _httpClient.DefaultRequestHeaders.Add("x-auth-token", privateKey);
+            _httpClient.DefaultRequestHeaders.Add("X-Fee-Payer", privateKey);
 
             var parameters = new Dictionary<string, string>()
             {
@@ -287,6 +292,7 @@ namespace mm_bot.Services
             string responseBody = await response.Content.ReadAsStringAsync();
 
             _httpClient.DefaultRequestHeaders.Remove("x-auth-token");
+            _httpClient.DefaultRequestHeaders.Remove("X-Fee-Payer");
 
             JObject txidResponce = JObject.Parse(responseBody);
 

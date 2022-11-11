@@ -40,7 +40,7 @@ namespace mm_bot.Services
             _mapper = mapper;
         }
 
-        public async Task ExchangeTokenAsync(WalletModel hotWalletFeePayer, WalletModel wallet, string inputMint, string outputMint, decimal amount)
+        public async Task ExchangeTokenAsync(WalletModel wallet, string inputMint, string outputMint, decimal amount)
         {
             var quotes = await _jupService.GetQuoteAsync(inputMint, outputMint, amount);
 
@@ -49,7 +49,7 @@ namespace mm_bot.Services
             if (quotes != null)
             {
                 jupSwapRequestModel.route = quotes.data[0];
-                jupSwapRequestModel.feeAccount = hotWalletFeePayer.PublicKey;
+                jupSwapRequestModel.feeAccount = wallet.PublicKey;
                 jupSwapRequestModel.userPublicKey = wallet.PublicKey;
                 jupSwapRequestModel.wrapUnwrapSOL = true;
 
@@ -166,7 +166,7 @@ namespace mm_bot.Services
                     if (!token.Mint.Equals(_options.Value.USDCmint) && token.AmountDouble != 0.0m)
                     {
                         _ = Task.Factory.StartNew(() =>
-                        ExchangeTokenAsync(hotWallet, coldWallet, token.Mint, _options.Value.USDCmint, token.AmountDouble)
+                        ExchangeTokenAsync(coldWallet, token.Mint, _options.Value.USDCmint, token.AmountDouble)
                         , TaskCreationOptions.AttachedToParent);
                     }
                 }
@@ -212,7 +212,7 @@ namespace mm_bot.Services
                 if (coldWallet.SOL != 0)
                 {
                     _ = Task.Factory.StartNew(() =>
-                    TransferSolAsync(coldWallet, hotWallet, coldWallet.SOL)
+                    TransferSolAsync(coldWallet, hotWallet, coldWallet.SOL - 0.00001m)
                     , TaskCreationOptions.AttachedToParent);
                 }
             }
@@ -244,7 +244,8 @@ namespace mm_bot.Services
                         {
                             if (transactionInfo.result.meta.preTokenBalances != null)
                             {
-                                if (transactionInfo.result.meta.preTokenBalances.Where(b => b.owner == publicKey && b.mint == recieveMint).Any())
+                                if (transactionInfo.result.meta.preTokenBalances.Where(b => b.owner == publicKey && b.mint == recieveMint).Any() &&
+                                    transactionInfo.result.meta.postTokenBalances.Where(b => b.owner == publicKey && b.mint == recieveMint).Any())
                                 {
                                     transaction.RecieveTokenCount = transactionInfo.result.meta.postTokenBalances
                                                                 .Where(b => b.owner == publicKey && b.mint == recieveMint).FirstOrDefault()

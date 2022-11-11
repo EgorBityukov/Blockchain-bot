@@ -44,7 +44,7 @@ IHost host = Host.CreateDefaultBuilder(args)
             configuration.BaseAddress = new Uri(cryptoApiUrl);
             configuration.Timeout = new TimeSpan(0, 0, 30);
             configuration.DefaultRequestHeaders.Clear();
-            configuration.DefaultRequestHeaders.Add("X-Fee-Payer", config.GetSection("Settings:HotWallet:PrivateKey").Value);
+            //configuration.DefaultRequestHeaders.Add("X-Fee-Payer", config.GetSection("Settings:HotWallet:PrivateKey").Value);
         });
 
         services.AddHttpClient("JupClient", config =>
