@@ -16,6 +16,6 @@ namespace mmTransactionDB.Repository.Interfaces
         public Task<bool> CheckWalletNotExistAsync(string privateKey);
         public Task<Wallet> GetHotWalletAsync();
         public Task<List<Wallet>> GetColdWalletsAsync();
-        public Task UpdateWalletAsync(Wallet updateWallet);
+        public Task UpdateWalletAsync(Wallet updateWallet, bool updateWithTokens);
     }
 }

@@ -34,9 +34,9 @@ namespace mm_bot.Services
             while (!cancellationToken.IsCancellationRequested)
             {
                 var hotWallet = await GetHotWalletAsync();
-                await UpdateWalletInfoWithoutTokensAsync(hotWallet);
+                var updatedHotWallet = await UpdateWalletInfoWithoutTokensAsync(hotWallet);
 
-                if (hotWallet.SOL < 0.1m)
+                if (updatedHotWallet.SOL < 0.1m)
                 {
                     cancellationTokenSourceTransactions.Cancel();
                     _logger.LogInformation("Program stopped because SOL balance on hot wallet less 0.1");
@@ -112,11 +112,20 @@ namespace mm_bot.Services
 
             var walletInfoJson = await _cryptoService.GetInfoAboutWalletAsync(privateKey);
 
-            walletInfo.PrivateKey = privateKey;
-            walletInfo.Lamports = walletInfoJson.Value<long>("lamports");
-            walletInfo.SOL = walletInfoJson.Value<decimal>("sol");
-            walletInfo.ApproximateMintPrice = walletInfoJson.Value<decimal>("approximate_mint_price");
-            walletInfo.PublicKey = walletInfoJson.Value<string>("public_key");
+            if (walletInfoJson == null)
+            {
+                walletInfo.Lamports = 0;
+                walletInfo.SOL = 0m;
+                walletInfo.ApproximateMintPrice = 0m;
+            }
+            else
+            {
+                walletInfo.PrivateKey = privateKey;
+                walletInfo.Lamports = walletInfoJson.Value<long>("lamports");
+                walletInfo.SOL = walletInfoJson.Value<decimal>("sol");
+                walletInfo.ApproximateMintPrice = walletInfoJson.Value<decimal>("approximate_mint_price");
+                walletInfo.PublicKey = walletInfoJson.Value<string>("public_key");
+            }
 
             return walletInfo;
         }
@@ -145,7 +154,7 @@ namespace mm_bot.Services
             var updatedWallet = await GetInfoAboutWalletAsync(wallet.PrivateKey);
             wallet.Lamports = updatedWallet.Lamports;
             wallet.SOL = updatedWallet.SOL;
-            await _walletRepository.UpdateWalletAsync(_mapper.Map<Wallet>(wallet));
+            await _walletRepository.UpdateWalletAsync(_mapper.Map<Wallet>(wallet), false);
 
             return wallet;
         }
@@ -156,7 +165,7 @@ namespace mm_bot.Services
             wallet.Lamports = updatedWallet.Lamports;
             wallet.SOL = updatedWallet.SOL;
             wallet.Tokens = await GetWalletTokensAsync(wallet.PublicKey);
-            await _walletRepository.UpdateWalletAsync(_mapper.Map<Wallet>(wallet));
+            await _walletRepository.UpdateWalletAsync(_mapper.Map<Wallet>(wallet), true);
 
             return wallet;
         }

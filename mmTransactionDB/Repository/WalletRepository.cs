@@ -27,23 +27,28 @@ namespace mmTransactionDB.Repository
             await _mmContext.SaveChangesAsync();
         }
 
-        public async Task UpdateWalletAsync(Wallet updateWallet)
+        public async Task UpdateWalletAsync(Wallet updateWallet, bool updateWithTokens)
         {
-            var databaseWallet = _mmContext.Wallets.Where(w => w.PublicKey == updateWallet.PublicKey).First();
+            var databaseWallet = _mmContext.Wallets.Include(w => w.Tokens).Where(w => w.PublicKey == updateWallet.PublicKey).FirstOrDefault();
+
             databaseWallet.Lamports = updateWallet.Lamports;
             databaseWallet.SOL = updateWallet.SOL;
 
-            foreach(var token in updateWallet.Tokens)
+            if (updateWithTokens)
             {
-                if (databaseWallet.Tokens.Where(t => t.PublicKey == token.PublicKey).Any())
+                foreach (var token in updateWallet.Tokens)
                 {
-                    var dbToken = _mmContext.Tokens.Where(t => t.PublicKey == token.PublicKey).First();
-                    dbToken.AmountDouble = token.AmountDouble;
-                    dbToken.Amount = token.Amount;
-                }
-                else
-                {
-                    databaseWallet.Tokens.Add(token);
+                    if (databaseWallet.Tokens.Where(t => t.PublicKey == token.PublicKey).Any())
+                    {
+                        var dbToken = _mmContext.Tokens.Where(t => t.PublicKey == token.PublicKey).FirstOrDefault();
+
+                        dbToken.AmountDouble = token.AmountDouble;
+                        dbToken.Amount = token.Amount;
+                    }
+                    else
+                    {
+                        databaseWallet.Tokens.Add(token);
+                    }
                 }
             }
 

@@ -159,18 +159,18 @@ namespace mm_bot.Services
 
             //var outer = Task.Factory.StartNew(() =>
             //{
-                foreach (var coldWallet in coldWallets)
+            foreach (var coldWallet in coldWallets)
+            {
+                foreach (var token in coldWallet.Tokens)
                 {
-                    foreach (var token in coldWallet.Tokens)
+                    if (!token.Mint.Equals(_options.Value.USDCmint) && token.AmountDouble != 0.0m)
                     {
-                        if (!token.Mint.Equals(_options.Value.USDCmint) && token.AmountDouble != 0.0m)
-                        {
-                            _ = Task.Factory.StartNew(() =>
-                            ExchangeTokenAsync(hotWallet, coldWallet, token.Mint, _options.Value.USDCmint, token.AmountDouble)
-                            , TaskCreationOptions.AttachedToParent);
-                        }
+                        _ = Task.Factory.StartNew(() =>
+                        ExchangeTokenAsync(hotWallet, coldWallet, token.Mint, _options.Value.USDCmint, token.AmountDouble)
+                        , TaskCreationOptions.AttachedToParent);
                     }
                 }
+            }
             //});
 
             //outer.Wait();
@@ -184,17 +184,17 @@ namespace mm_bot.Services
 
             //var outer = Task.Factory.StartNew(() =>
             //{
-                foreach (var coldWallet in coldWallets)
+            foreach (var coldWallet in coldWallets)
+            {
+                if (coldWallet.Tokens.Where(t => t.Mint == USDCmint).FirstOrDefault() != null
+                && coldWallet.Tokens.Where(t => t.Mint == USDCmint).FirstOrDefault().AmountDouble != 0.0m)
                 {
-                    if (coldWallet.Tokens.Where(t => t.Mint == USDCmint).FirstOrDefault() != null
-                    && coldWallet.Tokens.Where(t => t.Mint == USDCmint).FirstOrDefault().AmountDouble != 0.0m)
-                    {
-                        _ = Task.Factory.StartNew(() =>
-                         TransferTokenAsync(coldWallet, hotWallet, USDCmint,
-                            coldWallet.Tokens.Where(t => t.Mint == USDCmint).First().AmountDouble)
-                         , TaskCreationOptions.AttachedToParent);
-                    }
+                    _ = Task.Factory.StartNew(() =>
+                     TransferTokenAsync(coldWallet, hotWallet, USDCmint,
+                        coldWallet.Tokens.Where(t => t.Mint == USDCmint).First().AmountDouble)
+                     , TaskCreationOptions.AttachedToParent);
                 }
+            }
             //});
 
             //outer.Wait();
@@ -207,15 +207,15 @@ namespace mm_bot.Services
 
             //var outer = Task.Factory.StartNew(() =>
             //{
-                foreach (var coldWallet in coldWallets)
+            foreach (var coldWallet in coldWallets)
+            {
+                if (coldWallet.SOL != 0)
                 {
-                    if (coldWallet.SOL != 0)
-                    {
-                        _ = Task.Factory.StartNew(() =>
-                        TransferSolAsync(coldWallet, hotWallet, coldWallet.SOL)
-                        , TaskCreationOptions.AttachedToParent);
-                    }
+                    _ = Task.Factory.StartNew(() =>
+                    TransferSolAsync(coldWallet, hotWallet, coldWallet.SOL)
+                    , TaskCreationOptions.AttachedToParent);
                 }
+            }
             //});
 
             //outer.Wait();
@@ -223,44 +223,52 @@ namespace mm_bot.Services
 
         public async Task<mmTransactionModel> GetInfoAboutTransactionAsync(string txid, string operationType, string publicKey, string recieveMint)
         {
+            if (txid == null)
+            {
+                return null;
+            }
+
             TransactionInfoResponseModel transactionInfo = await _cryptoService.GetInfoAboutTransactionAsync(txid);
             mmTransactionModel transaction;
+
             try
             {
                 if (transactionInfo != null && transactionInfo.result != null)
                 {
                     transaction = new mmTransactionModel();
+                    transaction.Status = transactionInfo.result.meta.status.Err == null ? "Ok" : "Error";
 
-                    if (operationType.Equals("Exchange"))
+                    if (transaction.Status.Equals("Ok"))
                     {
-
-                        if (transactionInfo.result.meta.preTokenBalances != null)
+                        if (operationType.Equals("Exchange"))
                         {
-                            if (transactionInfo.result.meta.preTokenBalances.Where(b => b.owner == publicKey && b.mint == recieveMint).Any())
+                            if (transactionInfo.result.meta.preTokenBalances != null)
                             {
-                                transaction.RecieveTokenCount = transactionInfo.result.meta.postTokenBalances
-                                                            .Where(b => b.owner == publicKey && b.mint == recieveMint).FirstOrDefault()
-                                                            .uiTokenAmount.uiAmount.GetValueOrDefault(0) - transactionInfo.result.meta.preTokenBalances
-                                                            .Where(b => b.owner == publicKey && b.mint == recieveMint).FirstOrDefault()
-                                                            .uiTokenAmount.uiAmount.GetValueOrDefault(0);
+                                if (transactionInfo.result.meta.preTokenBalances.Where(b => b.owner == publicKey && b.mint == recieveMint).Any())
+                                {
+                                    transaction.RecieveTokenCount = transactionInfo.result.meta.postTokenBalances
+                                                                .Where(b => b.owner == publicKey && b.mint == recieveMint).FirstOrDefault()
+                                                                .uiTokenAmount.uiAmount.GetValueOrDefault(0) - transactionInfo.result.meta.preTokenBalances
+                                                                .Where(b => b.owner == publicKey && b.mint == recieveMint).FirstOrDefault()
+                                                                .uiTokenAmount.uiAmount.GetValueOrDefault(0);
+                                }
+                                else
+                                {
+                                    transaction.RecieveTokenCount = transactionInfo.result.meta.postTokenBalances
+                                                                .Where(b => b.owner == publicKey && b.mint == recieveMint).FirstOrDefault()
+                                                                .uiTokenAmount.uiAmount.GetValueOrDefault(0);
+                                }
                             }
                             else
                             {
-                                transaction.RecieveTokenCount = transactionInfo.result.meta.postTokenBalances
-                                                            .Where(b => b.owner == publicKey && b.mint == recieveMint).FirstOrDefault()
-                                                            .uiTokenAmount.uiAmount.GetValueOrDefault(0);
+                                transaction.RecieveTokenCount = (decimal)(transactionInfo.result.meta.postBalances.FirstOrDefault()
+                                                                        - transactionInfo.result.meta.preBalances.FirstOrDefault())
+                                                                        / 1000000000;
                             }
                         }
-                        else
-                        {
-                            transaction.RecieveTokenCount = (decimal)(transactionInfo.result.meta.postBalances.FirstOrDefault()
-                                                                    - transactionInfo.result.meta.preBalances.FirstOrDefault())
-                                                                    / 1000000000;
-                        }
-                    }
 
-                    transaction.Status = transactionInfo.result.meta.status.Err == null ? "Ok" : "Error";
-                    transaction.BalanceXToken = (decimal)transactionInfo.result.meta.postBalances.First() / 1000000000;
+                        transaction.BalanceXToken = (decimal)transactionInfo.result.meta.postBalances.First() / 1000000000;
+                    }
                 }
                 else
                 {
@@ -305,9 +313,9 @@ namespace mm_bot.Services
 
             var tranInfo = await GetInfoAboutTransactionAsync(txid, operationType, recieveWallet.PublicKey, recieveTokenMint);
 
-            if (tranInfo != null)
+            if (txid != null)
             {
-                if (tranInfo.Status.Equals("Ok"))
+                if (tranInfo != null && tranInfo.Status.Equals("Ok"))
                 {
                     transaction.Status = "Ok";
                     var tokens = await _walletService.GetWalletTokensAsync(transaction.SendWalletAddress);
@@ -317,8 +325,10 @@ namespace mm_bot.Services
                 }
                 else
                 {
-                    transaction.Status = "Error";
-                }  
+                    transaction.Status = "Ok";
+                    var tokens = await _walletService.GetWalletTokensAsync(transaction.SendWalletAddress);
+                    transaction.BalanceUSDCToken = tokens.Where(t => t.Mint.Equals(_options.Value.USDCmint)).Select(t => t.AmountDouble).FirstOrDefault();
+                }
             }
             else
             {

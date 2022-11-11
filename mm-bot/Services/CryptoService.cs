@@ -29,7 +29,7 @@ namespace mm_bot.Services
 
             if (walletResponce.Value<string>("status").Equals("error"))
             {
-                _logger.LogError("CryptoService - Create Wallet Http Request Exception: {0}", walletResponce.GetValue("error"));
+                _logger.LogError("CryptoService - Create Wallet Http Request Exception: {0}", (string)walletResponce.GetValue("error"));
                 return null;
             }
             else
@@ -51,7 +51,7 @@ namespace mm_bot.Services
 
             if (walletInfoResponce.Value<string>("status").Equals("error"))
             {
-                _logger.LogError("CryptoService - Create Wallet Http Request Exception: {0}", walletInfoResponce.GetValue("error"));
+                _logger.LogError("CryptoService - GetInfoAboutWalletAsync Http Request Exception: {0}", (string)walletInfoResponce.GetValue("error"));
                 return null;
             }
             else
@@ -97,7 +97,7 @@ namespace mm_bot.Services
             {
                 int k = 0;
 
-                while (response.StatusCode != System.Net.HttpStatusCode.OK || k == 4)
+                while (response.StatusCode != System.Net.HttpStatusCode.OK && k < 4)
                 {
                     await Task.Delay(4000);
                     k++;
@@ -108,7 +108,7 @@ namespace mm_bot.Services
             {
                 int k = 0;
 
-                while (response.StatusCode != System.Net.HttpStatusCode.OK || k == 3)
+                while (response.StatusCode != System.Net.HttpStatusCode.OK && k < 3)
                 {
                     await Task.Delay(120000);
                     k++;
@@ -153,7 +153,7 @@ namespace mm_bot.Services
             {
                 int k = 0;
 
-                while (response.StatusCode != System.Net.HttpStatusCode.OK || k == 4)
+                while (response.StatusCode != System.Net.HttpStatusCode.OK && k < 4)
                 {
                     await Task.Delay(4000);
                     k++;
@@ -164,7 +164,7 @@ namespace mm_bot.Services
             {
                 int k = 0;
 
-                while (response.StatusCode != System.Net.HttpStatusCode.OK || k == 3)
+                while (response.StatusCode != System.Net.HttpStatusCode.OK && k < 3)
                 {
                     await Task.Delay(120000);
                     k++;
@@ -200,7 +200,7 @@ namespace mm_bot.Services
             {
                 int k = 0;
 
-                while (response.StatusCode != System.Net.HttpStatusCode.OK || k == 4)
+                while (response.StatusCode != System.Net.HttpStatusCode.OK && k < 4)
                 {
                     await Task.Delay(4000);
                     k++;
@@ -211,7 +211,7 @@ namespace mm_bot.Services
             {
                 int k = 0;
 
-                while (response.StatusCode != System.Net.HttpStatusCode.OK || k == 3)
+                while (response.StatusCode != System.Net.HttpStatusCode.OK && k < 2)
                 {
                     await Task.Delay(120000);
                     k++;
@@ -222,6 +222,17 @@ namespace mm_bot.Services
             string responseBody = await response.Content.ReadAsStringAsync();
 
             JObject transactionInfoResponce = JObject.Parse(responseBody);
+
+            int i = 0;
+
+            while (transactionInfoResponce.GetValue("result").ToString().Equals("") && i < 2)
+            {
+                i++;
+                response = await _httpClient.GetAsync(requestUrl);
+                responseBody = await response.Content.ReadAsStringAsync();
+                transactionInfoResponce = JObject.Parse(responseBody);
+                await Task.Delay(4000);
+            }
 
             if (transactionInfoResponce.ContainsKey("status"))
             {
@@ -254,7 +265,7 @@ namespace mm_bot.Services
             {
                 int k = 0;
 
-                while (response.StatusCode != System.Net.HttpStatusCode.OK || k == 4)
+                while (response.StatusCode != System.Net.HttpStatusCode.OK && k < 4)
                 {
                     await Task.Delay(4000);
                     k++;
@@ -265,7 +276,7 @@ namespace mm_bot.Services
             {
                 int k = 0;
 
-                while (response.StatusCode != System.Net.HttpStatusCode.OK || k == 3)
+                while (response.StatusCode != System.Net.HttpStatusCode.OK && k < 3)
                 {
                     await Task.Delay(120000);
                     k++;
