@@ -84,8 +84,10 @@ namespace mm_bot
             {
                 if (!cancellationTokenSourceTransactions.IsCancellationRequested)
                 {
+                    _logger.LogInformation("Start Exchange");
                     //Start exchange transactions
                     await _exchangeService.StartExchangeAsync(cancellationTokenSourceTransactions);
+                    _logger.LogInformation("Stop Exchange");
                 }
                 else
                 {
