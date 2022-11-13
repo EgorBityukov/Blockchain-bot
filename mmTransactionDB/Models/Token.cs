@@ -14,5 +14,12 @@ namespace mmTransactionDB.Models
         public Wallet Owner { get; set; }
         public string Amount { get; set; }
         public decimal AmountDouble { get; set; }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is Token token) return PublicKey == token.PublicKey;
+            return false;
+        }
+        public override int GetHashCode() => PublicKey.GetHashCode();
     }
 }

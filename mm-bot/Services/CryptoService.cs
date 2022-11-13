@@ -136,7 +136,7 @@ namespace mm_bot.Services
             }
         }
 
-        public async Task<string> TransferTokenToAnotherWalletAsync(string privateKey, string mint, string toPublicKey, decimal count)
+        public async Task<string> TransferTokenToAnotherWalletAsync(string privateKey, string mint, string toPublicKey, decimal count, bool isForbiddenToCloseAccount = true)
         {
             _httpClient.DefaultRequestHeaders.Add("x-auth-token", privateKey);
             _httpClient.DefaultRequestHeaders.Add("X-Fee-Payer", privateKey);
@@ -145,8 +145,16 @@ namespace mm_bot.Services
             {
                 ["to"] = toPublicKey,
                 ["count"] = count.ToString(),
-                ["isForbiddenToCloseAccount"] = "true"
             };
+
+            if (isForbiddenToCloseAccount)
+            {
+                parameters.Add("isForbiddenToCloseAccount", "true");
+            }
+            else
+            {
+                parameters.Add("isForbiddenToCloseAccount", "false");
+            }
 
             var requestUrl = QueryHelpers.AddQueryString($"nft/token/{mint}/transfer", parameters);
 

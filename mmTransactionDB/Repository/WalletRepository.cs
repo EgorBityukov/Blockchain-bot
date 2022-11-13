@@ -41,7 +41,6 @@ namespace mmTransactionDB.Repository
                     if (databaseWallet.Tokens.Where(t => t.PublicKey == token.PublicKey).Any())
                     {
                         var dbToken = _mmContext.Tokens.Where(t => t.PublicKey == token.PublicKey).FirstOrDefault();
-
                         dbToken.AmountDouble = token.AmountDouble;
                         dbToken.Amount = token.Amount;
                     }
@@ -49,6 +48,13 @@ namespace mmTransactionDB.Repository
                     {
                         databaseWallet.Tokens.Add(token);
                     }
+                }
+
+                var deleteTokens = databaseWallet.Tokens.Except(updateWallet.Tokens).ToList();
+
+                foreach(var deleteToken in deleteTokens)
+                {
+                    databaseWallet.Tokens.Remove(deleteToken);
                 }
             }
 

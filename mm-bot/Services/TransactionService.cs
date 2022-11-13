@@ -165,9 +165,9 @@ namespace mm_bot.Services
                 {
                     if (!token.Mint.Equals(_options.Value.USDCmint) && token.AmountDouble != 0.0m)
                     {
-                        _ = Task.Factory.StartNew(() =>
-                        ExchangeTokenAsync(coldWallet, token.Mint, _options.Value.USDCmint, token.AmountDouble)
-                        , TaskCreationOptions.AttachedToParent);
+                        //_ = Task.Factory.StartNew(() =>
+                        await ExchangeTokenAsync(coldWallet, token.Mint, _options.Value.USDCmint, token.AmountDouble);
+                        //, TaskCreationOptions.AttachedToParent);
                     }
                 }
             }
@@ -189,10 +189,10 @@ namespace mm_bot.Services
                 if (coldWallet.Tokens.Where(t => t.Mint == USDCmint).FirstOrDefault() != null
                 && coldWallet.Tokens.Where(t => t.Mint == USDCmint).FirstOrDefault().AmountDouble != 0.0m)
                 {
-                    _ = Task.Factory.StartNew(() =>
-                     TransferTokenAsync(coldWallet, hotWallet, USDCmint,
-                        coldWallet.Tokens.Where(t => t.Mint == USDCmint).First().AmountDouble)
-                     , TaskCreationOptions.AttachedToParent);
+                    //_ = Task.Factory.StartNew(() =>
+                    await TransferTokenAsync(coldWallet, hotWallet, USDCmint,
+                       coldWallet.Tokens.Where(t => t.Mint == USDCmint).First().AmountDouble);
+                     //, TaskCreationOptions.AttachedToParent);
                 }
             }
             //});
@@ -211,14 +211,23 @@ namespace mm_bot.Services
             {
                 if (coldWallet.SOL != 0)
                 {
-                    _ = Task.Factory.StartNew(() =>
-                    TransferSolAsync(coldWallet, hotWallet, coldWallet.SOL - 0.00001m)
-                    , TaskCreationOptions.AttachedToParent);
+                    //await CloseTokenAccountsAsync(coldWallet, hotWallet);
+                    //_ = Task.Factory.StartNew(() =>
+                    await TransferSolAsync(coldWallet, hotWallet, coldWallet.SOL - 0.0025m);
+                    //, TaskCreationOptions.AttachedToParent);
                 }
             }
             //});
 
             //outer.Wait();
+        }
+
+        public async Task CloseTokenAccountsAsync(WalletModel coldWallet, WalletModel hotWallet)
+        {
+            foreach(var token in coldWallet.Tokens)
+            {
+                await _cryptoService.TransferTokenToAnotherWalletAsync(coldWallet.PrivateKey, token.Mint, hotWallet.PublicKey, 0, false);
+            }
         }
 
         public async Task<mmTransactionModel> GetInfoAboutTransactionAsync(string txid, string operationType, string publicKey, string recieveMint)
