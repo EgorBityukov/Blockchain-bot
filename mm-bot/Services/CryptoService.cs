@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Options;
+using mm_bot.Models;
 using mm_bot.Models.ResponseModels;
 using mm_bot.Services.Interfaces;
 using Newtonsoft.Json.Linq;
@@ -11,13 +13,16 @@ namespace mm_bot.Services
         private readonly ILogger<Worker> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly HttpClient _httpClient;
+        private readonly IOptions<ConfigSettings> _options;
 
         public CryptoService(IHttpClientFactory httpClientFactory,
-                             ILogger<Worker> logger)
+                             ILogger<Worker> logger,
+                             IOptions<ConfigSettings> options)
         {
             _httpClientFactory = httpClientFactory;
             _httpClient = _httpClientFactory.CreateClient("CryptoClient");
             _logger = logger;
+            _options = options;
         }
 
         public async Task<JObject> CreateWalletAsync()
@@ -149,8 +154,19 @@ namespace mm_bot.Services
             var parameters = new Dictionary<string, string>()
             {
                 ["to"] = toPublicKey,
-                ["count"] = count.ToString(),
             };
+
+            if(mint.Equals(_options.Value.XTokenMint))
+            {
+                long countLong = 0;
+                countLong = (long)(count * 10000);
+                parameters.Add("count", countLong.ToString());
+            }
+            else
+            {
+                parameters.Add("count", count.ToString());
+            }
+            
 
             if (isForbiddenToCloseAccount)
             {
