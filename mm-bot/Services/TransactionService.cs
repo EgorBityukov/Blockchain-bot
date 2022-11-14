@@ -264,9 +264,18 @@ namespace mm_bot.Services
                                 }
                                 else
                                 {
-                                    transaction.RecieveTokenCount = transactionInfo.result.meta.postTokenBalances
-                                                                .Where(b => b.owner == publicKey && b.mint == recieveMint).FirstOrDefault()
-                                                                .uiTokenAmount.uiAmount.GetValueOrDefault(0);
+                                    if (recieveMint.Equals(_options.Value.XTokenMint))
+                                    {
+                                        transaction.RecieveTokenCount = (decimal)(transactionInfo.result.meta.postBalances.FirstOrDefault()
+                                                                        - transactionInfo.result.meta.preBalances.FirstOrDefault())
+                                                                        / 1000000000;
+                                    }
+                                    else
+                                    {
+                                        transaction.RecieveTokenCount = transactionInfo.result.meta.postTokenBalances
+                                                                                                        .Where(b => b.owner == publicKey && b.mint == recieveMint).FirstOrDefault()
+                                                                                                        .uiTokenAmount.uiAmount.GetValueOrDefault(0);
+                                    } 
                                 }
                             }
                             else

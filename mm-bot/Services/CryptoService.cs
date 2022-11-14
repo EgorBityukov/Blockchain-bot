@@ -93,9 +93,11 @@ namespace mm_bot.Services
             var requestUrl = QueryHelpers.AddQueryString($"wallets/send", parameters);
 
             HttpResponseMessage response = await _httpClient.GetAsync(requestUrl);
+            string responseBody = await response.Content.ReadAsStringAsync();
 
             if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
             {
+                _logger.LogError("TransferSolToAnotherWalletAsync response: {0}", responseBody);
                 int k = 0;
 
                 while (response.StatusCode != System.Net.HttpStatusCode.OK && k < 4)
@@ -103,10 +105,13 @@ namespace mm_bot.Services
                     await Task.Delay(4000);
                     k++;
                     response = await _httpClient.GetAsync(requestUrl);
+                    responseBody = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("TransferSolToAnotherWalletAsync response: {0}", responseBody);
                 }
             }
             else if (response.StatusCode != System.Net.HttpStatusCode.OK)
             {
+                _logger.LogError("TransferSolToAnotherWalletAsync response: {0}", responseBody);
                 int k = 0;
 
                 while (response.StatusCode != System.Net.HttpStatusCode.OK && k < 3)
@@ -114,10 +119,10 @@ namespace mm_bot.Services
                     await Task.Delay(120000);
                     k++;
                     response = await _httpClient.GetAsync(requestUrl);
+                    responseBody = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("TransferSolToAnotherWalletAsync response: {0}", responseBody);
                 }
             }
-
-            string responseBody = await response.Content.ReadAsStringAsync();
 
             _httpClient.DefaultRequestHeaders.Remove("x-auth-token");
             _httpClient.DefaultRequestHeaders.Remove("X-Fee-Payer");
@@ -159,9 +164,11 @@ namespace mm_bot.Services
             var requestUrl = QueryHelpers.AddQueryString($"nft/token/{mint}/transfer", parameters);
 
             HttpResponseMessage response = await _httpClient.GetAsync(requestUrl);
+            string responseBody = await response.Content.ReadAsStringAsync();
 
             if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
             {
+                _logger.LogError("TransferTokenToAnotherWalletAsync response: {0}", responseBody);
                 int k = 0;
 
                 while (response.StatusCode != System.Net.HttpStatusCode.OK && k < 4)
@@ -169,10 +176,13 @@ namespace mm_bot.Services
                     await Task.Delay(4000);
                     k++;
                     response = await _httpClient.GetAsync(requestUrl);
+                    responseBody = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("TransferTokenToAnotherWalletAsync response: {0}", responseBody);
                 }
             }
             else if (response.StatusCode != System.Net.HttpStatusCode.OK)
             {
+                _logger.LogError("TransferTokenToAnotherWalletAsync response: {0}", responseBody);
                 int k = 0;
 
                 while (response.StatusCode != System.Net.HttpStatusCode.OK && k < 3)
@@ -180,10 +190,10 @@ namespace mm_bot.Services
                     await Task.Delay(120000);
                     k++;
                     response = await _httpClient.GetAsync(requestUrl);
+                    responseBody = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("TransferTokenToAnotherWalletAsync response: {0}", responseBody);
                 }
-            }
-
-            string responseBody = await response.Content.ReadAsStringAsync();
+            }   
 
             _httpClient.DefaultRequestHeaders.Remove("x-auth-token");
             _httpClient.DefaultRequestHeaders.Remove("X-Fee-Payer");
@@ -207,9 +217,11 @@ namespace mm_bot.Services
             var requestUrl = $"transactions/{txid}/";
 
             HttpResponseMessage response = await _httpClient.GetAsync(requestUrl);
+            string responseBody = await response.Content.ReadAsStringAsync();
 
             if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
             {
+                _logger.LogError("GetInfoAboutTransactionAsync response: {0}", responseBody);
                 int k = 0;
 
                 while (response.StatusCode != System.Net.HttpStatusCode.OK && k < 4)
@@ -217,10 +229,13 @@ namespace mm_bot.Services
                     await Task.Delay(4000);
                     k++;
                     response = await _httpClient.GetAsync(requestUrl);
+                    responseBody = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("GetInfoAboutTransactionAsync response: {0}", responseBody);
                 }
             }
             else if (response.StatusCode != System.Net.HttpStatusCode.OK)
             {
+                _logger.LogError("GetInfoAboutTransactionAsync response: {0}", responseBody);
                 int k = 0;
 
                 while (response.StatusCode != System.Net.HttpStatusCode.OK && k < 2)
@@ -228,10 +243,10 @@ namespace mm_bot.Services
                     await Task.Delay(120000);
                     k++;
                     response = await _httpClient.GetAsync(requestUrl);
+                    responseBody = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("GetInfoAboutTransactionAsync response: {0}", responseBody);
                 }
             }
-
-            string responseBody = await response.Content.ReadAsStringAsync();
 
             JObject transactionInfoResponce = JObject.Parse(responseBody);
 
