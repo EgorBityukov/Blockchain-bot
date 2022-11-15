@@ -38,7 +38,6 @@ namespace mm_bot.Services
             while (!cancellationToken.IsCancellationRequested)
             {
                 var hotWallet = await GetHotWalletAsync();
-                //var updatedHotWallet = await UpdateWalletInfoWithoutTokensAsync(hotWallet);
 
                 if (hotWallet.SOL < 0.1m)
                 {

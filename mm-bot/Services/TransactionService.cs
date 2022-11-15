@@ -88,14 +88,11 @@ namespace mm_bot.Services
 
                 if (swapTransaction != null)
                 {
-                    if (swapTransaction.Status.Equals("Ok"))
-                    {
-                        await _walletService.UpdateWalletInfoWithTokensAsync(wallet);
+                    await _walletService.UpdateWalletInfoWithTokensAsync(wallet);
 
-                        if (!wallet.HotWallet)
-                        {
-                            await _walletService.UpdateHotWalletAsync(false);
-                        }
+                    if (!wallet.HotWallet)
+                    {
+                        await _walletService.UpdateHotWalletAsync(false);
                     }
                 }
             }
@@ -111,15 +108,12 @@ namespace mm_bot.Services
 
             if (transaction != null)
             {
-                if (transaction.Status.Equals("Ok"))
-                {
-                    await _walletService.UpdateWalletInfoWithoutTokensAsync(fromWallet);
-                    await _walletService.UpdateWalletInfoWithoutTokensAsync(toWallet);
+                await _walletService.UpdateWalletInfoWithoutTokensAsync(fromWallet);
+                await _walletService.UpdateWalletInfoWithoutTokensAsync(toWallet);
 
-                    if (!fromWallet.HotWallet && !toWallet.HotWallet)
-                    {
-                        await _walletService.UpdateHotWalletAsync(false);
-                    }
+                if (!fromWallet.HotWallet && !toWallet.HotWallet)
+                {
+                    await _walletService.UpdateHotWalletAsync(false);
                 }
             }
         }
@@ -134,15 +128,12 @@ namespace mm_bot.Services
 
             if (transaction != null)
             {
-                if (transaction.Status.Equals("Ok"))
-                {
-                    await _walletService.UpdateWalletInfoWithTokensAsync(fromWallet);
-                    await _walletService.UpdateWalletInfoWithTokensAsync(toWallet);
+                await _walletService.UpdateWalletInfoWithTokensAsync(fromWallet);
+                await _walletService.UpdateWalletInfoWithTokensAsync(toWallet);
 
-                    if (!fromWallet.HotWallet && !toWallet.HotWallet)
-                    {
-                        await _walletService.UpdateHotWalletAsync(false);
-                    }
+                if (!fromWallet.HotWallet && !toWallet.HotWallet)
+                {
+                    await _walletService.UpdateHotWalletAsync(false);
                 }
             }
         }
@@ -192,7 +183,7 @@ namespace mm_bot.Services
                     //_ = Task.Factory.StartNew(() =>
                     await TransferTokenAsync(coldWallet, hotWallet, USDCmint,
                        coldWallet.Tokens.Where(t => t.Mint == USDCmint).First().AmountDouble);
-                     //, TaskCreationOptions.AttachedToParent);
+                    //, TaskCreationOptions.AttachedToParent);
                 }
             }
             //});
@@ -227,7 +218,7 @@ namespace mm_bot.Services
 
         public async Task CloseTokenAccountsAsync(WalletModel coldWallet, WalletModel hotWallet)
         {
-            foreach(var token in coldWallet.Tokens)
+            foreach (var token in coldWallet.Tokens)
             {
                 await _cryptoService.TransferTokenToAnotherWalletAsync(coldWallet.PrivateKey, token.Mint, hotWallet.PublicKey, 0, false);
             }

@@ -23,7 +23,7 @@ namespace mmTransactionDB.Repository
 
         public async Task<List<mmTransaction>> GetTodayTransactionsAsync()
         {
-            return await _mmContext.mmTransactions.Where(t => t.Date >= DateTime.Today && t.Date<DateTime.Today.AddDays(1)).ToListAsync(); //t => t.Date.Day == d && t.Date.Month == m && t.Date.Year == y
+            return await _mmContext.mmTransactions.Where(t => t.Date >= DateTime.Today && t.Date<DateTime.Today.AddDays(1)).ToListAsync();
         }
     }
 }

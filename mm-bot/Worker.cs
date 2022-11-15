@@ -104,28 +104,5 @@ namespace mm_bot
             _logger.LogInformation("Stopping");
             await Task.CompletedTask;
         }
-
-        //private async Task ListenForInput(CancellationToken cancellationToken)
-        //{
-        //    while (!cancellationToken.IsCancellationRequested)
-        //    {
-        //        string userInput = Console.ReadLine();
-
-        //        if (!String.IsNullOrWhiteSpace(userInput))
-        //        {
-        //            _logger.LogInformation($"Executing user command {userInput}...");
-
-        //            cancellationTokenSourceTransactions.Cancel();
-        //            var result = await _commandService.ProcessCommandAsync(userInput, cancellationTokenSourceTransactions);
-
-        //            _logger.LogInformation($"End user command {userInput}");
-
-        //            lock (cancellationTokenSourceTransactions)
-        //            {
-        //                cancellationTokenSourceTransactions = result;
-        //            }
-        //        }
-        //    }
-        //}
     }
 }
