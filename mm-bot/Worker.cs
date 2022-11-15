@@ -50,11 +50,6 @@ namespace mm_bot
                 }
             }
 
-            //Monitoring Sol balance on Hot Wallet
-            _ = Task.Run(() => _walletService.MonitoringSolBalanceAsync(cancellationTokenSourceTransactions, cancellationToken));
-
-            //Listen input commands
-            //_ = Task.Run(() => ListenForInput(cancellationToken));
             if (!cancellationTokenSourceTransactions.IsCancellationRequested)
             {
                 await base.StartAsync(cancellationToken);
@@ -81,6 +76,9 @@ namespace mm_bot
 
             //Will not add hot wallet, if already exsist, update it
             await _walletService.AddHotWalletFromConfigAsync(_options.Value.HotWallet);
+
+            //Monitoring Sol balance on Hot Wallet
+            _ = Task.Run(() => _walletService.MonitoringSolBalanceAsync(cancellationTokenSourceTransactions, stoppingToken));
 
             while (!stoppingToken.IsCancellationRequested)
             {
