@@ -213,7 +213,10 @@ namespace mm_bot.Services
                 {
                     //await CloseTokenAccountsAsync(coldWallet, hotWallet);
                     //_ = Task.Factory.StartNew(() =>
-                    await TransferSolAsync(coldWallet, hotWallet, coldWallet.SOL - 0.0025m);
+                    if (coldWallet.SOL > 0.0025m)
+                    {
+                        await TransferSolAsync(coldWallet, hotWallet, coldWallet.SOL - 0.0025m);
+                    }
                     //, TaskCreationOptions.AttachedToParent);
                 }
             }
