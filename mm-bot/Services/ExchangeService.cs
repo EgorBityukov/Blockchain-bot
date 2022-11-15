@@ -74,7 +74,7 @@ namespace mm_bot.Services
 
                                 var count = rnd.NextDecimal(0.1m, USDCtoken.AmountDouble);
 
-                                await _transactionService.ExchangeTokenAsync(coldWallet, USDCtoken.Mint, mint, count);
+                                await _transactionService.ExchangeTokenAsync(coldWallet, _options.Value.USDCmint, mint, count);
                             }
                         }
                         else
@@ -101,13 +101,13 @@ namespace mm_bot.Services
                                     {
                                         var count = rnd.NextDecimal(0.1m, artzAmount);
 
-                                        await _transactionService.ExchangeTokenAsync(coldWallet, _options.Value.XTokenMint ,USDCtoken.Mint, count);
+                                        await _transactionService.ExchangeTokenAsync(coldWallet, _options.Value.XTokenMint , _options.Value.USDCmint, count);
                                     }
                                     else
                                     {
                                         var count = rnd.NextDecimal(0.1m, USDCtoken.AmountDouble);
 
-                                        await _transactionService.ExchangeTokenAsync(coldWallet, USDCtoken.Mint, _options.Value.XTokenMint, count);
+                                        await _transactionService.ExchangeTokenAsync(coldWallet, _options.Value.USDCmint, _options.Value.XTokenMint, count);
                                     }
                                 }
                                 

@@ -20,6 +20,6 @@ namespace mm_bot.Models
             } 
         }
         private string amount;
-        public decimal AmountDouble { get; set; }
+        public decimal AmountDouble { get; set; } = 0m;
     }
 }

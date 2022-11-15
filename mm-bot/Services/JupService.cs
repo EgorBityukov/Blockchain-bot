@@ -1,4 +1,6 @@
 ﻿using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Options;
+using mm_bot.Models;
 using mm_bot.Models.ResponseModels;
 using mm_bot.Services.Interfaces;
 using Newtonsoft.Json.Linq;
@@ -15,13 +17,16 @@ namespace mm_bot.Services
         private readonly ILogger<Worker> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly HttpClient _httpClient;
+        private readonly IOptions<ConfigSettings> _options;
 
         public JupService(IHttpClientFactory httpClientFactory,
-                          ILogger<Worker> logger)
+                          ILogger<Worker> logger,
+                          IOptions<ConfigSettings> options)
         {
             _httpClientFactory = httpClientFactory;
             _httpClient = _httpClientFactory.CreateClient("JupClient");
             _logger = logger;
+            _options = options;
         }
 
         public async Task<JupQuoteResponseModel> GetQuoteAsync(string inputMint, string outputMint, decimal amount)
@@ -29,9 +34,17 @@ namespace mm_bot.Services
             var parameters = new Dictionary<string, string>()
             {
                 ["inputMint"] = inputMint,
-                ["outputMint"] = outputMint,
-                ["amount"] = ((long)(amount * 1000000m)).ToString()
+                ["outputMint"] = outputMint
             };
+
+            if (inputMint.Equals(_options.Value.XTokenMint))
+            {
+                parameters.Add("amount", ((long)(amount * 10000m)).ToString());
+            }
+            else
+            {
+                parameters.Add("amount", ((long)(amount * 1000000m)).ToString());
+            }
 
             var requestUrl = QueryHelpers.AddQueryString("quote", parameters);
 

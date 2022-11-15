@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using mmTransactionDB.Repository.Interfaces;
 using AutoMapper;
 using mmTransactionDB.Models;
+using Microsoft.Extensions.Options;
 
 namespace mm_bot.Services
 {
@@ -17,16 +18,19 @@ namespace mm_bot.Services
         private readonly ICryptoService _cryptoService;
         private readonly IWalletRepository _walletRepository;
         private readonly IMapper _mapper;
+        private readonly IOptions<ConfigSettings> _options;
 
         public WalletService(ICryptoService cryptoService,
                              IWalletRepository walletRepository,
                              IMapper mapper,
-                             ILogger<Worker> logger)
+                             ILogger<Worker> logger,
+                             IOptions<ConfigSettings> options)
         {
             _cryptoService = cryptoService;
             _walletRepository = walletRepository;
             _mapper = mapper;
             _logger = logger;
+            _options = options;
         }
 
         public async Task MonitoringSolBalanceAsync(CancellationTokenSource cancellationTokenSourceTransactions, CancellationToken cancellationToken)
@@ -39,7 +43,7 @@ namespace mm_bot.Services
                 if (hotWallet.SOL < 0.1m)
                 {
                     cancellationTokenSourceTransactions.Cancel();
-                    _logger.LogInformation("Program stopped because SOL balance on hot wallet less 0.1");
+                    _logger.LogError("Program stopped because SOL balance on hot wallet less 0.1");
                 }
 
                 await Task.Delay(10800000, cancellationToken);
@@ -137,13 +141,20 @@ namespace mm_bot.Services
 
             foreach (var token in tokensResponce)
             {
-                    tokens.Add(new TokenModel
-                    {
-                        PublicKey = token.pubkey,
-                        Mint = token.info.mint,
-                        OwnerId = token.info.owner,
-                        Amount = token.info.amount
-                    });
+                string artozoAmount = token.info.amount;
+
+                if (token.info.mint.Equals(_options.Value.XTokenMint))
+                {
+                    artozoAmount = (Convert.ToDecimal(token.info.amount) * 100m).ToString();
+                }
+
+                tokens.Add(new TokenModel
+                {
+                    PublicKey = token.pubkey,
+                    Mint = token.info.mint,
+                    OwnerId = token.info.owner,
+                    Amount = artozoAmount
+                });
             }
 
             return tokens;

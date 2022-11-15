@@ -12,14 +12,18 @@ namespace mm_bot.Services
     public class CleanUpService : ICleanUpService
     {
         private readonly ITransactionService _transactionService;
+        private readonly IWalletService _walletService;
 
-        public CleanUpService(ITransactionService transactionService)
+        public CleanUpService(ITransactionService transactionService,
+                              IWalletService walletService)
         {
             _transactionService = transactionService;
+            _walletService = walletService;
         }
 
         public async Task<bool> CleanUpAsync()
         {
+            await _walletService.UpdateColdWalletsAsync();
             await _transactionService.ExchangeAllTokensOnUSDCAsync();
             await _transactionService.TransferAllUSDCToHotWalletAsync();
             await _transactionService.TransferAllSOLToHotWalletAsync();
