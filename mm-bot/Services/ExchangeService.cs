@@ -83,20 +83,23 @@ namespace mm_bot.Services
 
                             if (rates != null)
                             {
-                                var rate = rates.Where(r => r.name.Equals("SOL-USDC")).FirstOrDefault();
+                                var rate = rates.Where(r => r.name.Equals("ARTZ-USDC")).FirstOrDefault();
                                 
                                 if (rate != null)
                                 {
                                     decimal price = rate.price.HasValue ? rate.price.Value : 0m;
+                                    var artzToken = coldWallet.Tokens.Where(t => t.Mint == _options.Value.XTokenMint).FirstOrDefault();
 
-                                    if (coldWallet.SOL * price + USDCtoken.AmountDouble >= 2m)
+                                    decimal artzAmount = artzToken != null ? artzToken.AmountDouble : 0m;
+
+                                    if (artzAmount * price + USDCtoken.AmountDouble >= 2m)
                                     {
                                         coldWallet = await UpdateEnoughSolBalanceForColdWallet(hotWallet, coldWallet);
                                     }
 
-                                    if (coldWallet.SOL * price >= USDCtoken.AmountDouble)
+                                    if (artzAmount * price >= USDCtoken.AmountDouble)
                                     {
-                                        var count = rnd.NextDecimal(0.1m, coldWallet.SOL);
+                                        var count = rnd.NextDecimal(0.1m, artzAmount);
 
                                         await _transactionService.ExchangeTokenAsync(coldWallet, _options.Value.XTokenMint ,USDCtoken.Mint, count);
                                     }
