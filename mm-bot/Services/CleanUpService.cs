@@ -27,6 +27,8 @@ namespace mm_bot.Services
             await _transactionService.ExchangeAllTokensOnUSDCAsync();
             await _transactionService.TransferAllUSDCToHotWalletAsync();
             await _transactionService.TransferAllSOLToHotWalletAsync();
+            await _walletService.UpdateColdWalletsAsync();
+            await _walletService.UpdateHotWalletAsync(true);
 
             return true;
         }
