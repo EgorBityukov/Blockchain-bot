@@ -34,9 +34,9 @@ namespace mm_bot.Services
             while (!cancellationToken.IsCancellationRequested)
             {
                 var hotWallet = await GetHotWalletAsync();
-                var updatedHotWallet = await UpdateWalletInfoWithoutTokensAsync(hotWallet);
+                //var updatedHotWallet = await UpdateWalletInfoWithoutTokensAsync(hotWallet);
 
-                if (updatedHotWallet.SOL < 0.1m)
+                if (hotWallet.SOL < 0.1m)
                 {
                     cancellationTokenSourceTransactions.Cancel();
                     _logger.LogInformation("Program stopped because SOL balance on hot wallet less 0.1");
