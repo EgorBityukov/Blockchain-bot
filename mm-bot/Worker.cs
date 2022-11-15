@@ -30,25 +30,7 @@ namespace mm_bot
         public override async Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Start");
-            _logger.LogInformation("Generation wallets {genWallets}", _options.Value.AutomaticGenerationOfWallets);
 
-            //Generate wallets
-            if (_options.Value.AutomaticGenerationOfWallets)
-            {
-                _logger.LogInformation("Start wallets generation (Count: {count})", _options.Value.ColdWalletsCount);
-                await _walletService.DeleteAllWalletsAsync();
-                await _walletService.GenerateWalletsAsync(_options.Value.ColdWalletsCount);
-                _options.Value.AutomaticGenerationOfWallets = false;
-            }
-            else
-            {
-                await _walletService.AddColdWalletsFromConfigAsync(_options.Value.ColdWallet);
-                await _walletService.UpdateColdWalletsAsync();
-            }
-
-            //Will not add hot wallet, if already exsist, update it
-            await _walletService.AddHotWalletFromConfigAsync(_options.Value.HotWallet);
-            
             var args = Environment.GetCommandLineArgs();
 
             if (args.Length > 0)
@@ -67,6 +49,25 @@ namespace mm_bot
                     }
                 }
             }
+
+            _logger.LogInformation("Generation wallets {genWallets}", _options.Value.AutomaticGenerationOfWallets);
+
+            //Generate wallets
+            if (_options.Value.AutomaticGenerationOfWallets)
+            {
+                _logger.LogInformation("Start wallets generation (Count: {count})", _options.Value.ColdWalletsCount);
+                await _walletService.DeleteAllWalletsAsync();
+                await _walletService.GenerateWalletsAsync(_options.Value.ColdWalletsCount);
+                _options.Value.AutomaticGenerationOfWallets = false;
+            }
+            else
+            {
+                await _walletService.AddColdWalletsFromConfigAsync(_options.Value.ColdWallet);
+                await _walletService.UpdateColdWalletsAsync();
+            }
+
+            //Will not add hot wallet, if already exsist, update it
+            await _walletService.AddHotWalletFromConfigAsync(_options.Value.HotWallet);
 
             //Monitoring Sol balance on Hot Wallet
             _ = Task.Run(() => _walletService.MonitoringSolBalanceAsync(cancellationTokenSourceTransactions, cancellationToken));
