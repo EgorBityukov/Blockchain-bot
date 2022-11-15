@@ -104,9 +104,9 @@ namespace mm_bot.Services
 
             txid = await _cryptoService.TransferSolToAnotherWalletAsync(fromWallet.PrivateKey, toWallet.PublicKey, sol);
 
-            var transaction = await CreateTransactionAsync(txid, "Transfer", fromWallet, toWallet, "SOL", "SOL", sol);
+            await CreateTransactionAsync(txid, "Transfer", fromWallet, toWallet, "SOL", "SOL", sol);
 
-            if (transaction != null)
+            if (txid != null)
             {
                 await _walletService.UpdateWalletInfoWithoutTokensAsync(fromWallet);
                 await _walletService.UpdateWalletInfoWithoutTokensAsync(toWallet);
@@ -124,9 +124,9 @@ namespace mm_bot.Services
 
             txid = await _cryptoService.TransferTokenToAnotherWalletAsync(fromWallet.PrivateKey, mint, toWallet.PublicKey, count);
 
-            var transaction = await CreateTransactionAsync(txid, "Transfer", fromWallet, toWallet, mint, mint, count);
+            await CreateTransactionAsync(txid, "Transfer", fromWallet, toWallet, mint, mint, count);
 
-            if (transaction != null)
+            if (txid != null)
             {
                 await _walletService.UpdateWalletInfoWithTokensAsync(fromWallet);
                 await _walletService.UpdateWalletInfoWithTokensAsync(toWallet);
