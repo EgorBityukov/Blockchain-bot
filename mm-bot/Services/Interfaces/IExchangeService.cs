@@ -9,6 +9,6 @@ namespace mm_bot.Services.Interfaces
     public interface IExchangeService
     {
         public Task StartExchangeAsync(CancellationTokenSource cancellationTokenSource);
-        public Task CheckDailyTradingVolumeInUSDCperXtokenAsync(CancellationTokenSource cancellationTokenSource);
+        public Task<bool> CheckDailyTradingVolumeInUSDCperXtokenAsync(CancellationTokenSource cancellationTokenSource);
     }
 }
