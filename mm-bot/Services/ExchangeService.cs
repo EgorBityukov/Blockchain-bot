@@ -163,8 +163,8 @@ namespace mm_bot.Services
                 if (coldWallet.Tokens.Where(t => t.Mint == _options.Value.USDCmint).FirstOrDefault() == null ||
                     coldWallet.Tokens.Where(t => t.Mint == _options.Value.USDCmint).FirstOrDefault().AmountDouble < _options.Value.BaseVolumeUSDCperColdWallet)
                 {
-                    var hotWalletUSDCcount = hotWallet.Tokens.Where(t => t.Mint == _options.Value.USDCmint).FirstOrDefault().AmountDouble;
-                    var tokenCount = coldWallet.Tokens.Where(t => t.Mint == _options.Value.USDCmint).FirstOrDefault().AmountDouble;
+                    var hotWalletUSDCcount = hotWallet.Tokens.Where(t => t.Mint == _options.Value.USDCmint).FirstOrDefault() == null ? 0m : hotWallet.Tokens.Where(t => t.Mint == _options.Value.USDCmint).FirstOrDefault().AmountDouble;
+                    var tokenCount = coldWallet.Tokens.Where(t => t.Mint == _options.Value.USDCmint).FirstOrDefault() == null ? 0m : coldWallet.Tokens.Where(t => t.Mint == _options.Value.USDCmint).FirstOrDefault().AmountDouble;
                     var neededCount = _options.Value.BaseVolumeUSDCperColdWallet - tokenCount;
 
                     if (hotWalletUSDCcount < neededCount)
