@@ -35,82 +35,84 @@ namespace mm_bot.Services
 
         public async Task StartExchangeAsync(CancellationTokenSource cancellationTokenSource)
         {
-            await CheckBaseLimitsOfColdWalletsAsync();
-
-            while (!cancellationTokenSource.Token.IsCancellationRequested)
+            if (await CheckBaseLimitsOfColdWalletsAsync(cancellationTokenSource))
             {
-                if (await CheckDailyTradingVolumeInUSDCperXtokenAsync(cancellationTokenSource)) {
-
-                    var coldWallets = await _walletService.GetColdWalletsAsync();
-                    var hotWallet = await _walletService.GetHotWalletAsync();
-
-                    var coldWallet = coldWallets[new Random().Next(coldWallets.Count)];
-
-                    if (await _transactionService.AllowedWalletExchange(coldWallet, _options.Value.MinimumDelayInSecondsForOneTransactionPerWallet))
+                while (!cancellationTokenSource.Token.IsCancellationRequested)
+                {
+                    if (await CheckDailyTradingVolumeInUSDCperXtokenAsync(cancellationTokenSource))
                     {
-                        if (coldWallet.Tokens.Where(t => t.Mint != _options.Value.USDCmint && t.AmountDouble > 0.0m).Any())
+
+                        var coldWallets = await _walletService.GetColdWalletsAsync();
+                        var hotWallet = await _walletService.GetHotWalletAsync();
+
+                        var coldWallet = coldWallets[new Random().Next(coldWallets.Count)];
+
+                        if (await _transactionService.AllowedWalletExchange(coldWallet, _options.Value.MinimumDelayInSecondsForOneTransactionPerWallet))
                         {
-                            coldWallet = await UpdateEnoughSolBalanceForColdWallet(hotWallet, coldWallet);
-
-                            foreach (var token in coldWallet.Tokens)
+                            if (coldWallet.Tokens.Where(t => t.Mint != _options.Value.USDCmint && t.AmountDouble > 0.0m).Any())
                             {
-                                if (token.Mint != _options.Value.USDCmint && token.AmountDouble > 0.0m)
+                                coldWallet = await UpdateEnoughSolBalanceForColdWallet(hotWallet, coldWallet);
+
+                                foreach (var token in coldWallet.Tokens)
                                 {
-                                    await _transactionService.ExchangeTokenAsync(coldWallet, token.Mint, _options.Value.USDCmint, token.AmountDouble);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            decimal randRes = (decimal)new Random().NextDouble();
-                            var USDCtoken = coldWallet.Tokens.Where(t => t.Mint == _options.Value.USDCmint).FirstOrDefault();
-
-                            if (randRes < _options.Value.PercentageOfRandomTransactionsForAddToken)
-                            {
-                                if (USDCtoken != null && USDCtoken.AmountDouble >= 1.0m)
-                                {
-                                    var mint = await _transactionService.GetRandomMintAsync();
-                                    coldWallet = await UpdateEnoughSolBalanceForColdWallet(hotWallet, coldWallet);
-
-                                    var count = rnd.NextDecimal(0.1m, USDCtoken.AmountDouble);
-
-                                    await _transactionService.ExchangeTokenAsync(coldWallet, _options.Value.USDCmint, mint, count);
+                                    if (token.Mint != _options.Value.USDCmint && token.AmountDouble > 0.0m)
+                                    {
+                                        await _transactionService.ExchangeTokenAsync(coldWallet, token.Mint, _options.Value.USDCmint, token.AmountDouble);
+                                    }
                                 }
                             }
                             else
                             {
-                                var rates = await _raydiumService.GetExchangeRatesAsync();
+                                decimal randRes = (decimal)new Random().NextDouble();
+                                var USDCtoken = coldWallet.Tokens.Where(t => t.Mint == _options.Value.USDCmint).FirstOrDefault();
 
-                                if (rates != null)
+                                if (randRes < _options.Value.PercentageOfRandomTransactionsForAddToken)
                                 {
-                                    var rate = rates.Where(r => r.name.Equals("ARTZ-USDC")).FirstOrDefault();
-
-                                    if (rate != null)
+                                    if (USDCtoken != null && USDCtoken.AmountDouble >= 1.0m)
                                     {
-                                        decimal price = rate.price.HasValue ? rate.price.Value : 0m;
-                                        var artzToken = coldWallet.Tokens.Where(t => t.Mint == _options.Value.XTokenMint).FirstOrDefault();
+                                        var mint = await _transactionService.GetRandomMintAsync();
+                                        coldWallet = await UpdateEnoughSolBalanceForColdWallet(hotWallet, coldWallet);
 
-                                        decimal artzAmount = artzToken != null ? artzToken.AmountDouble : 0m;
+                                        var count = rnd.NextDecimal(0.1m, USDCtoken.AmountDouble);
 
-                                        if (artzAmount * price + USDCtoken.AmountDouble >= 2m)
-                                        {
-                                            coldWallet = await UpdateEnoughSolBalanceForColdWallet(hotWallet, coldWallet);
-                                        }
-
-                                        if (artzAmount * price >= USDCtoken.AmountDouble)
-                                        {
-                                            var count = rnd.NextDecimal(0.1m, artzAmount);
-
-                                            await _transactionService.ExchangeTokenAsync(coldWallet, _options.Value.XTokenMint, _options.Value.USDCmint, count);
-                                        }
-                                        else
-                                        {
-                                            var count = rnd.NextDecimal(0.1m, USDCtoken.AmountDouble);
-
-                                            await _transactionService.ExchangeTokenAsync(coldWallet, _options.Value.USDCmint, _options.Value.XTokenMint, count);
-                                        }
+                                        await _transactionService.ExchangeTokenAsync(coldWallet, _options.Value.USDCmint, mint, count);
                                     }
+                                }
+                                else
+                                {
+                                    var rates = await _raydiumService.GetExchangeRatesAsync();
 
+                                    if (rates != null)
+                                    {
+                                        var rate = rates.Where(r => r.name.Equals("ARTZ-USDC")).FirstOrDefault();
+
+                                        if (rate != null)
+                                        {
+                                            decimal price = rate.price.HasValue ? rate.price.Value : 0m;
+                                            var artzToken = coldWallet.Tokens.Where(t => t.Mint == _options.Value.XTokenMint).FirstOrDefault();
+
+                                            decimal artzAmount = artzToken != null ? artzToken.AmountDouble : 0m;
+
+                                            if (artzAmount * price + USDCtoken.AmountDouble >= 2m)
+                                            {
+                                                coldWallet = await UpdateEnoughSolBalanceForColdWallet(hotWallet, coldWallet);
+                                            }
+
+                                            if (artzAmount * price >= USDCtoken.AmountDouble)
+                                            {
+                                                var count = rnd.NextDecimal(0.1m, artzAmount);
+
+                                                await _transactionService.ExchangeTokenAsync(coldWallet, _options.Value.XTokenMint, _options.Value.USDCmint, count);
+                                            }
+                                            else
+                                            {
+                                                var count = rnd.NextDecimal(0.1m, USDCtoken.AmountDouble);
+
+                                                await _transactionService.ExchangeTokenAsync(coldWallet, _options.Value.USDCmint, _options.Value.XTokenMint, count);
+                                            }
+                                        }
+
+                                    }
                                 }
                             }
                         }
@@ -133,7 +135,7 @@ namespace mm_bot.Services
             return true;
         }
 
-        public async Task CheckBaseLimitsOfColdWalletsAsync()
+        public async Task<bool> CheckBaseLimitsOfColdWalletsAsync(CancellationTokenSource cancellationTokenSource)
         {
             var coldWallets = await _walletService.GetColdWalletsAsync();
             var hotWallet = await _walletService.GetHotWalletAsync();
@@ -143,17 +145,43 @@ namespace mm_bot.Services
                 if (coldWallet.SOL < _options.Value.BaseVolumeSOLperColdWallet)
                 {
                     var neededCount = _options.Value.BaseVolumeSOLperColdWallet - coldWallet.SOL;
-                    await _transactionService.TransferSolAsync(hotWallet, coldWallet, neededCount);
+
+                    if (hotWallet.SOL < neededCount)
+                    {
+                        _logger.LogError("Not enough SOL balance on Hot Wallet. Balance: {0}, tried to transfer: {1}", hotWallet.SOL, neededCount);
+                        cancellationTokenSource.Cancel();
+
+                        return false;
+                    }
+                    else
+                    {
+                        await _transactionService.TransferSolAsync(hotWallet, coldWallet, neededCount);
+                    }
+                    
                 }
 
                 if (coldWallet.Tokens.Where(t => t.Mint == _options.Value.USDCmint).FirstOrDefault() == null ||
                     coldWallet.Tokens.Where(t => t.Mint == _options.Value.USDCmint).FirstOrDefault().AmountDouble < _options.Value.BaseVolumeUSDCperColdWallet)
                 {
-                    var tokenCount = coldWallet.Tokens.Where(t => t.Mint == _options.Value.USDCmint).FirstOrDefault() == null ? 0m : coldWallet.Tokens.Where(t => t.Mint == _options.Value.USDCmint).FirstOrDefault().AmountDouble;
+                    var hotWalletUSDCcount = hotWallet.Tokens.Where(t => t.Mint == _options.Value.USDCmint).FirstOrDefault().AmountDouble;
+                    var tokenCount = coldWallet.Tokens.Where(t => t.Mint == _options.Value.USDCmint).FirstOrDefault().AmountDouble;
                     var neededCount = _options.Value.BaseVolumeUSDCperColdWallet - tokenCount;
-                    await _transactionService.TransferTokenAsync(hotWallet, coldWallet, _options.Value.USDCmint, neededCount);
+
+                    if (hotWalletUSDCcount < neededCount)
+                    {
+                        _logger.LogError("Not enough USDC balance on Hot Wallet. Balance: {0}, tried to transfer: {1}", hotWalletUSDCcount, neededCount);
+                        cancellationTokenSource.Cancel();
+
+                        return false;
+                    }
+                    else
+                    {
+                        await _transactionService.TransferTokenAsync(hotWallet, coldWallet, _options.Value.USDCmint, neededCount);
+                    }
                 }
             }
+
+            return true;
         }
 
         public async Task<WalletModel> UpdateEnoughSolBalanceForColdWallet(WalletModel hotWallet, WalletModel coldWallet)

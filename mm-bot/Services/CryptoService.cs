@@ -156,7 +156,7 @@ namespace mm_bot.Services
                 ["to"] = toPublicKey,
             };
 
-            if(mint.Equals(_options.Value.XTokenMint))
+            if (mint.Equals(_options.Value.XTokenMint))
             {
                 long countLong = 0;
                 countLong = (long)(count * 10000);
@@ -166,7 +166,7 @@ namespace mm_bot.Services
             {
                 parameters.Add("count", count.ToString());
             }
-            
+
 
             if (isForbiddenToCloseAccount)
             {
@@ -209,7 +209,7 @@ namespace mm_bot.Services
                     responseBody = await response.Content.ReadAsStringAsync();
                     _logger.LogError("TransferTokenToAnotherWalletAsync response: {0}", responseBody);
                 }
-            }   
+            }
 
             _httpClient.DefaultRequestHeaders.Remove("x-auth-token");
             _httpClient.DefaultRequestHeaders.Remove("X-Fee-Payer");
@@ -237,7 +237,7 @@ namespace mm_bot.Services
 
             if (response.StatusCode == System.Net.HttpStatusCode.Conflict)
             {
-                _logger.LogError("GetInfoAboutTransactionAsync response: {0}", responseBody);
+                _logger.LogError("GetInfoAboutTransactionAsync response: {0}, txid: {1}", responseBody, txid);
                 int k = 0;
 
                 while (response.StatusCode != System.Net.HttpStatusCode.OK && k < 4)
@@ -246,12 +246,12 @@ namespace mm_bot.Services
                     k++;
                     response = await _httpClient.GetAsync(requestUrl);
                     responseBody = await response.Content.ReadAsStringAsync();
-                    _logger.LogError("GetInfoAboutTransactionAsync response: {0}", responseBody);
+                    _logger.LogError("GetInfoAboutTransactionAsync response: {0}, txid: {1}", responseBody, txid);
                 }
             }
             else if (response.StatusCode != System.Net.HttpStatusCode.OK)
             {
-                _logger.LogError("GetInfoAboutTransactionAsync response: {0}", responseBody);
+                _logger.LogError("GetInfoAboutTransactionAsync response: {0}, txid: {1}", responseBody, txid);
                 int k = 0;
 
                 while (response.StatusCode != System.Net.HttpStatusCode.OK && k < 2)
@@ -260,7 +260,7 @@ namespace mm_bot.Services
                     k++;
                     response = await _httpClient.GetAsync(requestUrl);
                     responseBody = await response.Content.ReadAsStringAsync();
-                    _logger.LogError("GetInfoAboutTransactionAsync response: {0}", responseBody);
+                    _logger.LogError("GetInfoAboutTransactionAsync response: {0}, txid: {1}", responseBody, txid);
                 }
             }
 
@@ -268,26 +268,23 @@ namespace mm_bot.Services
 
             int i = 0;
 
-            while (transactionInfoResponce.GetValue("result").ToString().Equals("") && i < 2)
+            while (transactionInfoResponce.GetValue("result").ToString().Equals("") && i < 200)
             {
+                await Task.Delay(2000);
                 i++;
                 response = await _httpClient.GetAsync(requestUrl);
                 responseBody = await response.Content.ReadAsStringAsync();
                 transactionInfoResponce = JObject.Parse(responseBody);
-                await Task.Delay(4000);
             }
 
             if (transactionInfoResponce.ContainsKey("status"))
             {
-                _logger.LogError("CryptoService - Get Transaction info Http Request Exception: {0} /n" +
-                    "Transaction Id: {1}", transactionInfoResponce.GetValue("error"));
-                return null;
+                _logger.LogError("CryptoService - Get Transaction info Response: {0} /n" +
+                    "Transaction Id: {1}", transactionInfoResponce, txid);
             }
-            else
-            {
-                TransactionInfoResponseModel transactionInfo = transactionInfoResponce.ToObject<TransactionInfoResponseModel>();
-                return transactionInfo;
-            }
+
+            TransactionInfoResponseModel transactionInfo = transactionInfoResponce.ToObject<TransactionInfoResponseModel>();
+            return transactionInfo;
         }
 
         public async Task<string> SignTransactionAsync(string privateKey, string txid)

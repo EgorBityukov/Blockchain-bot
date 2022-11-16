@@ -191,18 +191,20 @@ namespace mm_bot.Services
 
         }
 
-        public async Task UpdateHotWalletAsync(bool updateTokens)
+        public async Task<WalletModel> UpdateHotWalletAsync(bool updateTokens)
         {
             var hotWallet = await GetHotWalletAsync();
 
             if (updateTokens)
             {
-                await UpdateWalletInfoWithTokensAsync(hotWallet);
+                hotWallet = await UpdateWalletInfoWithTokensAsync(hotWallet);
             }
             else
             {
-                await UpdateWalletInfoWithoutTokensAsync(hotWallet);
+                hotWallet = await UpdateWalletInfoWithoutTokensAsync(hotWallet);
             }
+
+            return hotWallet;
         }
 
         public async Task DeleteAllWalletsAsync()
