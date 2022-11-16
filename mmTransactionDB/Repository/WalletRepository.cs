@@ -74,7 +74,7 @@ namespace mmTransactionDB.Repository
 
         public async Task<List<Wallet>> GetColdWalletsAsync()
         {
-            return await _mmContext.Wallets
+            return await _mmContext.Wallets.AsNoTracking()
                 .Include(w => w.Tokens)
                 .Where(w => w.HotWallet == false)
                 .ToListAsync();
@@ -82,7 +82,7 @@ namespace mmTransactionDB.Repository
 
         public async Task<Wallet> GetHotWalletAsync()
         {
-            return await _mmContext.Wallets
+            return await _mmContext.Wallets.AsNoTracking()
                 .Include(w => w.Tokens)
                 .Where(w => w.HotWallet == true)
                 .FirstOrDefaultAsync();
@@ -90,7 +90,7 @@ namespace mmTransactionDB.Repository
 
         public async Task<List<Wallet>> GetWalletsAsync()
         {
-            return await _mmContext.Wallets
+            return await _mmContext.Wallets.AsNoTracking()
                 .Include(w => w.Tokens)
                 .ToListAsync();
         }

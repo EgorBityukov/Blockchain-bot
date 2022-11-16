@@ -46,8 +46,18 @@ namespace mm_bot.Services
         public async Task<JObject> GetInfoAboutWalletAsync(string privateKey)
         {
             _httpClient.DefaultRequestHeaders.Add("x-auth-token", privateKey);
+            HttpResponseMessage response;
 
-            HttpResponseMessage response = await _httpClient.GetAsync("wallets");
+            try
+            {
+                response = await _httpClient.GetAsync("wallets");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("GetInfoAboutWalletAsync Exception: {0}, InnerException: {1}", ex.Message, ex.InnerException);
+                return null;
+            }
+
             string responseBody = await response.Content.ReadAsStringAsync();
 
             _httpClient.DefaultRequestHeaders.Remove("x-auth-token");

@@ -11,11 +11,6 @@ using mmTransactionDB.Repository;
 using mmTransactionDB.Repository.Interfaces;
 using System.Net;
 
-System.Net.ServicePointManager.SecurityProtocol =
-            SecurityProtocolType.Tls12 |
-            SecurityProtocolType.Tls11 |
-            SecurityProtocolType.Tls;
-
 var config = new ConfigurationBuilder()
           .SetBasePath(Directory.GetCurrentDirectory())
           .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)

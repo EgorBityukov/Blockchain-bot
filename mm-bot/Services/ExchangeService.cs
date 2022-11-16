@@ -41,21 +41,22 @@ namespace mm_bot.Services
                 {
                     if (await CheckDailyTradingVolumeInUSDCperXtokenAsync(cancellationTokenSource))
                     {
-
                         var coldWallets = await _walletService.GetColdWalletsAsync();
                         var hotWallet = await _walletService.GetHotWalletAsync();
 
                         var coldWallet = coldWallets[new Random().Next(coldWallets.Count)];
 
+                        coldWallet = await _walletService.UpdateWalletInfoWithTokensAsync(coldWallet);
+
                         if (await _transactionService.AllowedWalletExchange(coldWallet, _options.Value.MinimumDelayInSecondsForOneTransactionPerWallet))
                         {
-                            if (coldWallet.Tokens.Where(t => t.Mint != _options.Value.USDCmint && t.AmountDouble > 0.0m).Any())
+                            if (coldWallet.Tokens.Where(t => t.Mint != _options.Value.USDCmint && t.Mint != _options.Value.XTokenMint && t.AmountDouble > 0.0m).Any())
                             {
                                 coldWallet = await UpdateEnoughSolBalanceForColdWallet(hotWallet, coldWallet);
 
                                 foreach (var token in coldWallet.Tokens)
                                 {
-                                    if (token.Mint != _options.Value.USDCmint && token.AmountDouble > 0.0m)
+                                    if (token.Mint != _options.Value.USDCmint && token.Mint != _options.Value.XTokenMint && token.AmountDouble > 0.0m)
                                     {
                                         await _transactionService.ExchangeTokenAsync(coldWallet, token.Mint, _options.Value.USDCmint, token.AmountDouble);
                                     }
@@ -111,7 +112,6 @@ namespace mm_bot.Services
                                                 await _transactionService.ExchangeTokenAsync(coldWallet, _options.Value.USDCmint, _options.Value.XTokenMint, count);
                                             }
                                         }
-
                                     }
                                 }
                             }
