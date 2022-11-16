@@ -19,5 +19,6 @@ namespace mm_bot.Models
         public int ColdWalletsCount { get; set; }
         public string USDCmint { get; set; }
         public string XTokenMint { get; set; }
+        public int SlippageBps { get; set; }
     }
 }

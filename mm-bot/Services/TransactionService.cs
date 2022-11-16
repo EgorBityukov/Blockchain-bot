@@ -42,7 +42,7 @@ namespace mm_bot.Services
 
         public async Task ExchangeTokenAsync(WalletModel wallet, string inputMint, string outputMint, decimal amount)
         {
-            var quotes = await _jupService.GetQuoteAsync(inputMint, outputMint, amount);
+            var quotes = await _jupService.GetQuoteAsync(inputMint, outputMint, amount, _options.Value.SlippageBps);
 
             JupSwapRequestModel jupSwapRequestModel = new JupSwapRequestModel();
 

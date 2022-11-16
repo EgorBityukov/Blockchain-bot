@@ -29,12 +29,13 @@ namespace mm_bot.Services
             _options = options;
         }
 
-        public async Task<JupQuoteResponseModel> GetQuoteAsync(string inputMint, string outputMint, decimal amount)
+        public async Task<JupQuoteResponseModel> GetQuoteAsync(string inputMint, string outputMint, decimal amount, int slippageBps)
         {
             var parameters = new Dictionary<string, string>()
             {
                 ["inputMint"] = inputMint,
-                ["outputMint"] = outputMint
+                ["outputMint"] = outputMint,
+                ["slippageBps"] = slippageBps.ToString()
             };
 
             if (inputMint.Equals(_options.Value.XTokenMint))
