@@ -69,12 +69,12 @@ namespace mm_bot.Services
 
                                 if (randRes < _options.Value.PercentageOfRandomTransactionsForAddToken)
                                 {
-                                    if (USDCtoken != null && USDCtoken.AmountDouble >= 0.1m) //1m
+                                    if (USDCtoken != null && USDCtoken.AmountDouble >= 1m)
                                     {
                                         var mint = await _transactionService.GetRandomMintAsync();
                                         coldWallet = await UpdateEnoughSolBalanceForColdWallet(hotWallet, coldWallet);
 
-                                        var count = rnd.NextDecimal(0.1m, USDCtoken.AmountDouble);
+                                        var count = rnd.NextDecimal(1m, USDCtoken.AmountDouble);
 
                                         await _transactionService.ExchangeTokenAsync(coldWallet, _options.Value.USDCmint, mint, count);
                                     }
@@ -94,19 +94,19 @@ namespace mm_bot.Services
 
                                             decimal artzAmount = artzToken != null ? artzToken.AmountDouble : 0m;
 
-                                            if (artzAmount * price + USDCtoken.AmountDouble >= 0.1m) //2m
+                                            if (artzAmount * price + USDCtoken.AmountDouble >= 2m)
                                             {
                                                 coldWallet = await UpdateEnoughSolBalanceForColdWallet(hotWallet, coldWallet);
 
                                                 if (artzAmount * price >= USDCtoken.AmountDouble)
                                                 {
-                                                    var count = rnd.NextDecimal(0.1m, artzAmount); //1m
+                                                    var count = rnd.NextDecimal(1m, artzAmount);
 
                                                     await _transactionService.ExchangeTokenAsync(coldWallet, _options.Value.XTokenMint, _options.Value.USDCmint, count);
                                                 }
                                                 else
                                                 {
-                                                    var count = rnd.NextDecimal(0.1m, USDCtoken.AmountDouble); //1m
+                                                    var count = rnd.NextDecimal(1m, USDCtoken.AmountDouble);
 
                                                     await _transactionService.ExchangeTokenAsync(coldWallet, _options.Value.USDCmint, _options.Value.XTokenMint, count);
                                                 }
