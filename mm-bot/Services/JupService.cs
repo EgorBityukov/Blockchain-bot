@@ -93,16 +93,14 @@ namespace mm_bot.Services
 
         public async Task<List<string>> GetMintsAsync()
         {
-            string requestUrl = "indexed-route-map";
-
             var parameters = new Dictionary<string, string>()
             {
                 ["onlyDirectRoutes"] = "true"
             };
 
-            var encodedContent = new FormUrlEncodedContent(parameters);
+            var requestUrl = QueryHelpers.AddQueryString($"indexed-route-map", parameters); //var encodedContent = new FormUrlEncodedContent(parameters);
 
-            HttpResponseMessage response = await _httpClient.PostAsync(requestUrl, encodedContent);
+            HttpResponseMessage response = await _httpClient.GetAsync(requestUrl);
 
             string responseBody = await response.Content.ReadAsStringAsync();
 

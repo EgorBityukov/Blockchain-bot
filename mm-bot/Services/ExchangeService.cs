@@ -39,7 +39,7 @@ namespace mm_bot.Services
             {
                 while (!cancellationTokenSource.Token.IsCancellationRequested)
                 {
-                    if (await CheckDailyTradingVolumeInUSDCperXtokenAsync(cancellationTokenSource))
+                   if (await CheckDailyTradingVolumeInUSDCperXtokenAsync(cancellationTokenSource))
                     {
                         var coldWallets = await _walletService.GetColdWalletsAsync();
                         var hotWallet = await _walletService.GetHotWalletAsync();
